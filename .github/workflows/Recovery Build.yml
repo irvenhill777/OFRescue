@@ -4,314 +4,274 @@ on:
   workflow_dispatch:
     inputs:
       MANIFEST_URL:
-        description: 'OrangeFox manifest Git URL'
+        description: "OrangeFox sync repository URL"
         required: true
         type: string
+        default: "https://gitlab.com/OrangeFox/sync.git"
+
       MANIFEST_BRANCH:
-        description: 'Manifest branch'
+        description: "OrangeFox release branch"
         required: true
         type: string
+        default: "12.1"
+
       DEVICE_TREE_URL:
-        description: 'Boston device tree Git URL'
+        description: "Boston device tree Git URL"
         required: true
-        default: 'https://github.com/luhhcarrl2x-commits/android_device_motorola_boston.git'
         type: string
+        default: "https://github.com/luhhcarrl2x-commits/android_device_motorola_boston.git"
+
       DEVICE_TREE_BRANCH:
-        description: 'Device tree branch'
+        description: "Boston device tree branch"
         required: true
-        default: 'TWRP'
         type: string
-      DEVICE_PATH:
-        description: 'Device tree path inside source'
+        default: "TWRP"
+
+      DEVICE_TREE_PATH:
+        description: "Device tree destination"
         required: true
-        default: 'device/motorola/boston'
         type: string
+        default: "device/motorola/boston"
+
       DEVICE_NAME:
-        description: 'Device codename'
+        description: "Device codename"
         required: true
-        default: 'boston'
         type: string
-      MAKEFILE_NAME:
-        description: 'Lunch product name without -eng'
+        default: "boston"
+
+      LUNCH_PRODUCT:
+        description: "Recovery lunch product"
         required: true
-        default: 'twrp_boston'
         type: string
+        default: "twrp_boston"
+
       BUILD_TARGET:
-        description: 'Build target'
+        description: "Build target"
         required: true
-        default: 'recovery'
         type: choice
         options:
-          - recovery
-      USER_NAME:
-        description: 'Git username'
-        required: true
-        default: 'OFRescue Builder'
-        type: string
-      USER_EMAIL:
-        description: 'Git email'
-        required: true
-        default: 'ofrescue-builder@example.invalid'
-        type: string
+          - recoveryimage
+        default: recoveryimage
 
 permissions:
   contents: read
 
 concurrency:
-  group: ofrescue-build-${{ github.ref }}
+  group: ofrescue-boston-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
-    name: Build Boston Recovery
-    runs-on: ubuntu-latest
+    name: Build OrangeFox for Boston
+    runs-on: ubuntu-22.04
     timeout-minutes: 360
 
     env:
       MANIFEST_URL: ${{ inputs.MANIFEST_URL }}
-      MANIFEST_BRANCH: ${{ inputs.MANIFEST_BRANCH }}
+      FOX_BRANCH: ${{ inputs.MANIFEST_BRANCH }}
       DEVICE_TREE_URL: ${{ inputs.DEVICE_TREE_URL }}
       DEVICE_TREE_BRANCH: ${{ inputs.DEVICE_TREE_BRANCH }}
-      DEVICE_PATH: ${{ inputs.DEVICE_PATH }}
+      DEVICE_TREE_PATH: ${{ inputs.DEVICE_TREE_PATH }}
       DEVICE_NAME: ${{ inputs.DEVICE_NAME }}
-      MAKEFILE_NAME: ${{ inputs.MAKEFILE_NAME }}
+      LUNCH_PRODUCT: ${{ inputs.LUNCH_PRODUCT }}
       BUILD_TARGET: ${{ inputs.BUILD_TARGET }}
-      USER_NAME: ${{ inputs.USER_NAME }}
-      USER_EMAIL: ${{ inputs.USER_EMAIL }}
+      BUILD_DIR: ${{ github.workspace }}/fox_12.1
 
     steps:
       - name: Checkout OFRescue
         uses: actions/checkout@v4
 
-      - name: Validate build inputs
+      - name: Show build configuration
         shell: bash
         run: |
-          set -euo pipefail
-
-          for name in \
-            MANIFEST_URL MANIFEST_BRANCH \
-            DEVICE_TREE_URL DEVICE_TREE_BRANCH \
-            DEVICE_PATH DEVICE_NAME MAKEFILE_NAME \
-            BUILD_TARGET USER_NAME USER_EMAIL
-          do
-            if [ -z "${!name}" ]; then
-              echo "::error::$name cannot be empty."
-              exit 1
-            fi
-          done
-
-          case "$MANIFEST_URL" in
-            https://*|git@github.com:*) ;;
-            *)
-              echo "::error::Unsupported manifest URL."
-              exit 1
-              ;;
-          esac
-
-          case "$DEVICE_TREE_URL" in
-            https://*|git@github.com:*) ;;
-            *)
-              echo "::error::Unsupported device tree URL."
-              exit 1
-              ;;
-          esac
-
-          if [[ ! "$DEVICE_PATH" =~ ^[A-Za-z0-9._/-]+$ ]] ||
-             [[ "$DEVICE_PATH" == /* ]] ||
-             [[ "$DEVICE_PATH" == *".."* ]]; then
-            echo "::error::Invalid device tree path."
-            exit 1
-          fi
-
-          if [[ ! "$DEVICE_NAME" =~ ^[A-Za-z0-9_-]+$ ]]; then
-            echo "::error::Invalid device name."
-            exit 1
-          fi
-
-          if [[ ! "$MAKEFILE_NAME" =~ ^[A-Za-z0-9_-]+$ ]]; then
-            echo "::error::Invalid lunch product."
-            exit 1
-          fi
-
-          if [ "$BUILD_TARGET" != "recovery" ]; then
-            echo "::error::Only the recovery target is enabled."
-            exit 1
-          fi
-
-          echo "Build inputs passed validation."
           echo "Device: $DEVICE_NAME"
-          echo "Device path: $DEVICE_PATH"
-          echo "Lunch product: $MAKEFILE_NAME"
-          echo "Build target: $BUILD_TARGET"
+          echo "OrangeFox branch: $FOX_BRANCH"
+          echo "Device tree: $DEVICE_TREE_URL"
+          echo "Device tree branch: $DEVICE_TREE_BRANCH"
+          echo "Build directory: $BUILD_DIR"
 
       - name: Install build dependencies
         shell: bash
         run: |
-          set -euo pipefail
-
           sudo apt-get update
-
-          sudo apt-get install -y \
-            git curl wget aria2 \
-            zip unzip rsync \
-            python3 python-is-python3 \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            bc \
+            bison \
+            build-essential \
+            ccache \
+            curl \
+            flex \
+            g++-multilib \
+            gcc-multilib \
+            git \
+            git-lfs \
+            gnupg \
+            gperf \
+            imagemagick \
+            lib32ncurses-dev \
+            lib32readline-dev \
+            lib32z1-dev \
+            libelf-dev \
+            liblz4-tool \
+            libncurses-dev \
+            libssl-dev \
+            libxml2 \
+            libxml2-utils \
+            lzop \
             openjdk-17-jdk \
-            bc bison build-essential \
-            flex g++-multilib gcc-multilib \
-            libncurses-dev libssl-dev \
-            libxml2-utils lz4 \
+            pngcrush \
+            python3 \
+            python-is-python3 \
+            rsync \
+            schedtool \
+            squashfs-tools \
+            unzip \
+            xsltproc \
+            zip \
             zlib1g-dev
 
-      - name: Setup OrangeFox build environment
+          git config --global user.name "OFRescue Builder"
+          git config --global user.email "ofrescue-builder@users.noreply.github.com"
+
+      - name: Clone OrangeFox sync tools
         shell: bash
         run: |
-          set -euo pipefail
+          set -e
+          git clone --depth=1 \
+            --branch "$FOX_BRANCH" \
+            "$MANIFEST_URL" \
+            "$RUNNER_TEMP/orangefox-sync"
 
-          mkdir -p "$HOME/ofx_scripts"
+          echo "OrangeFox sync repository downloaded."
+          find "$RUNNER_TEMP/orangefox-sync" \
+            -maxdepth 4 \
+            -type f \
+            -name 'orangefox_sync.sh' \
+            -print
 
-          git clone \
-            https://gitlab.com/OrangeFox/misc/scripts \
-            "$HOME/ofx_scripts/scripts"
-
-          cd "$HOME/ofx_scripts/scripts"
-
-          sudo bash setup/android_build_env.sh
-
-      - name: Install repo tool
+      - name: Initialize and sync OrangeFox sources
         shell: bash
         run: |
-          set -euo pipefail
+          set -e
 
-          mkdir -p "$HOME/bin"
+          SYNC_SCRIPT="$(find "$RUNNER_TEMP/orangefox-sync" \
+            -type f \
+            -name 'orangefox_sync.sh' \
+            -print -quit)"
 
-          curl -fL \
-            https://storage.googleapis.com/git-repo-downloads/repo \
-            -o "$HOME/bin/repo"
+          if [ -z "$SYNC_SCRIPT" ]; then
+            echo "::error::orangefox_sync.sh was not found in the sync repository."
+            echo "Repository contents:"
+            find "$RUNNER_TEMP/orangefox-sync" -maxdepth 3 -type f
+            exit 1
+          fi
 
-          chmod +x "$HOME/bin/repo"
+          mkdir -p "$BUILD_DIR"
+          cd "$(dirname "$SYNC_SCRIPT")"
 
-          echo "$HOME/bin" >> "$GITHUB_PATH"
+          chmod +x "$SYNC_SCRIPT"
 
-      - name: Configure Git
+          bash "$SYNC_SCRIPT" \
+            --branch "$FOX_BRANCH" \
+            --path "$BUILD_DIR"
+
+      - name: Verify Android source tree
         shell: bash
         run: |
-          set -euo pipefail
+          set -e
+          cd "$BUILD_DIR"
 
-          git config --global user.name "$USER_NAME"
-          git config --global user.email "$USER_EMAIL"
+          if [ ! -f build/envsetup.sh ]; then
+            echo "::error::Android build/envsetup.sh is missing."
+            echo "OrangeFox source synchronization did not complete correctly."
+            exit 1
+          fi
 
-      - name: Initialize OrangeFox source
+          echo "Android source tree verified."
+
+      - name: Add Boston device tree
         shell: bash
         run: |
-          set -euo pipefail
+          set -e
+          cd "$BUILD_DIR"
 
-          mkdir -p workspace
-          cd workspace
+          mkdir -p "$(dirname "$DEVICE_TREE_PATH")"
+          rm -rf "$DEVICE_TREE_PATH"
 
-          repo init \
-            --depth=1 \
-            -u "$MANIFEST_URL" \
-            -b "$MANIFEST_BRANCH"
-
-      - name: Synchronize source
-        shell: bash
-        working-directory: workspace
-        run: |
-          set -euo pipefail
-
-          repo sync \
-            -c \
-            --no-clone-bundle \
-            --no-tags \
-            --optimized-fetch \
-            --prune \
-            --force-sync \
-            -j2
-
-      - name: Clone Boston device tree
-        shell: bash
-        working-directory: workspace
-        run: |
-          set -euo pipefail
-
-          mkdir -p "$(dirname "$DEVICE_PATH")"
-
-          git clone \
-            --depth=1 \
+          git clone --depth=1 \
             --branch "$DEVICE_TREE_BRANCH" \
             "$DEVICE_TREE_URL" \
-            "$DEVICE_PATH"
+            "$DEVICE_TREE_PATH"
 
-          test -f "$DEVICE_PATH/AndroidProducts.mk"
-          test -f "$DEVICE_PATH/BoardConfig.mk"
-          test -f "$DEVICE_PATH/twrp_boston.mk"
+          echo "Boston device tree downloaded."
 
-          echo "Boston device tree cloned and checked."
-
-      - name: Configure swap space
-        uses: pierotofy/set-swap-space@master
-        with:
-          swap-size-gb: 12
-
-      - name: Verify build configuration
+      - name: Verify Boston device tree
         shell: bash
-        working-directory: workspace
         run: |
-          set -euo pipefail
+          set -e
+          cd "$BUILD_DIR"
 
-          test -f build/envsetup.sh
+          test -f "$DEVICE_TREE_PATH/AndroidProducts.mk"
+          test -f "$DEVICE_TREE_PATH/BoardConfig.mk"
 
-          test -f "$DEVICE_PATH/AndroidProducts.mk"
-          test -f "$DEVICE_PATH/BoardConfig.mk"
-          test -f "$DEVICE_PATH/twrp_boston.mk"
+          echo "Boston device tree files found."
+          echo "Available product definitions:"
+          cat "$DEVICE_TREE_PATH/AndroidProducts.mk"
 
-          echo "Boston build configuration files found."
-
-      - name: Build recovery image
+      - name: Configure build environment
         shell: bash
-        working-directory: workspace
         run: |
-          set -euo pipefail
+          set -e
+          cd "$BUILD_DIR"
+
+          export FOX_BUILD_DEVICE="$DEVICE_NAME"
+          export ALLOW_MISSING_DEPENDENCIES=true
+          export LC_ALL=C
 
           source build/envsetup.sh
 
-          export ALLOW_MISSING_DEPENDENCIES=true
+          lunch "${LUNCH_PRODUCT}-eng"
+
+      - name: Build Boston recovery image
+        shell: bash
+        run: |
+          set -e
+          cd "$BUILD_DIR"
+
           export FOX_BUILD_DEVICE="$DEVICE_NAME"
+          export ALLOW_MISSING_DEPENDENCIES=true
           export LC_ALL=C
 
-          lunch "${MAKEFILE_NAME}-eng"
+          source build/envsetup.sh
+          lunch "${LUNCH_PRODUCT}-eng"
 
-          mka -j2 adbd recoveryimage
+          echo "Starting recovery build..."
+          mka -j2 adbd "$BUILD_TARGET"
 
-      - name: Verify build output
+      - name: Verify recovery image
         shell: bash
-        working-directory: workspace
         run: |
-          set -euo pipefail
+          set -e
 
-          OUTPUT_DIR="out/target/product/$DEVICE_NAME"
+          RECOVERY_IMAGE="$BUILD_DIR/out/target/product/$DEVICE_NAME/recovery.img"
 
-          if [ ! -d "$OUTPUT_DIR" ]; then
-            echo "::error::Build output directory is missing."
+          if [ ! -s "$RECOVERY_IMAGE" ]; then
+            echo "::error::recovery.img was not generated."
+            echo "Build output directory:"
+            ls -lah "$BUILD_DIR/out/target/product/$DEVICE_NAME/" || true
             exit 1
           fi
 
-          find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.img' -print
+          echo "Recovery image successfully generated."
+          ls -lh "$RECOVERY_IMAGE"
 
-          if [ ! -f "$OUTPUT_DIR/recovery.img" ]; then
-            echo "::error::Expected recovery.img was not produced."
-            exit 1
-          fi
-
-          echo "Recovery image found."
-          sha256sum "$OUTPUT_DIR/recovery.img"
-
-      - name: Upload recovery artifacts
+      - name: Upload Boston recovery artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: OFRescue-Boston-Recovery-${{ github.run_number }}
+          name: OFRescue-Boston-Recovery
           path: |
-            workspace/out/target/product/${{ inputs.DEVICE_NAME }}/*.img
-            workspace/out/target/product/${{ inputs.DEVICE_NAME }}/*.zip
+            fox_12.1/out/target/product/boston/recovery.img
+            fox_12.1/out/target/product/boston/*.zip
           if-no-files-found: error
+          compression-level: 0
           retention-days: 14
