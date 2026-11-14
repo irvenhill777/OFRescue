@@ -36,6 +36,10 @@
 					<icon res="restart"/>
 					<action function="set">tw_back=advanced</action>
 					<action function="overlay">reboot</action>
+					<listitem name="OFRescue Boston">
+    <icon res="overview"/>
+    <action function="page">ofrescue</action>
+</listitem>
 				</listitem>
 			</listbox>
 
