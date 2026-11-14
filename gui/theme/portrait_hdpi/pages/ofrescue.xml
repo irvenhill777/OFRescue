@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- OFRescue Boston - OrangeFox 12.1 -->
-<!-- Navigation and informational pages only. -->
+<!-- Safe informational interface. -->
 <!-- No flashing, wiping, formatting or restoring. -->
 
 <recovery>
@@ -38,39 +38,42 @@
         <listitem name="Recovery Builder Status">
           <action function="page">ofrescue_builder</action>
         </listitem>
-      </listbox>
 
-      <action>
-        <touch key="back"/>
-        <action function="page">advanced</action>
-      </action>
+      </listbox>
     </page>
 
     <page name="ofrescue_info">
       <template name="base"/>
+
       <text style="text_ab_title">
         <placement x="%col1_x_indent%" y="%ab_bc_y%"/>
         <text>Device Information</text>
       </text>
+
       <text style="text_body1">
         <placement x="%col1_x_indent%" y="%row1_1a_y%"/>
         <text>Motorola Moto G Stylus 5G 2024</text>
       </text>
+
       <text style="text_body1">
         <placement x="%col1_x_indent%" y="%row2_1a_y%"/>
         <text>Model: XT2419-1</text>
       </text>
+
       <text style="text_body1">
         <placement x="%col1_x_indent%" y="%row3_1a_y%"/>
         <text>Codename: Boston</text>
       </text>
+
       <text style="text_body2">
         <placement x="%col1_x_indent%" y="%row4_1a_y%"/>
-        <text>These are target details, not live hardware readings.</text>
+        <text>Target details only - not live hardware readings.</text>
       </text>
+
       <listbox style="group_list">
         <placement x="0" y="%row5_1a_y%"
           w="%screen_w%" h="%bl_h1%"/>
+
         <listitem name="Back to OFRescue">
           <action function="page">ofrescue</action>
         </listitem>
@@ -79,33 +82,41 @@
 
     <page name="ofrescue_diagnostics">
       <template name="base"/>
+
       <text style="text_ab_title">
         <placement x="%col1_x_indent%" y="%ab_bc_y%"/>
         <text>Bootloop Diagnostics</text>
       </text>
+
       <text style="text_body1">
         <placement x="%col1_x_indent%" y="%row1_1a_y%"/>
         <text>Read-only diagnostic checklist</text>
       </text>
+
       <text style="text_body2">
         <placement x="%col1_x_indent%" y="%row2_1a_y%"/>
         <text>1. Record recovery version and build date.</text>
       </text>
+
       <text style="text_body2">
         <placement x="%col1_x_indent%" y="%row3_1a_y%"/>
         <text>2. Review recovery logs.</text>
       </text>
+
       <text style="text_body2">
         <placement x="%col1_x_indent%" y="%row4_1a_y%"/>
         <text>3. Verify device model and partition layout.</text>
       </text>
+
       <text style="text_body2_fail">
         <placement x="%col1_x_indent%" y="%row5_1a_y%"/>
         <text>Never flash based only on this checklist.</text>
       </text>
+
       <listbox style="group_list">
         <placement x="0" y="%row6_1a_y%"
           w="%screen_w%" h="%bl_h1%"/>
+
         <listitem name="Back to OFRescue">
           <action function="page">ofrescue</action>
         </listitem>
@@ -114,29 +125,36 @@
 
     <page name="ofrescue_backup">
       <template name="base"/>
+
       <text style="text_ab_title">
         <placement x="%col1_x_indent%" y="%ab_bc_y%"/>
         <text>Partition Backup Guidance</text>
       </text>
+
       <text style="text_body1">
         <placement x="%col1_x_indent%" y="%row1_1a_y%"/>
         <text>Backup planning only</text>
       </text>
+
       <text style="text_body2">
         <placement x="%col1_x_indent%" y="%row2_1a_y%"/>
         <text>Inspect available partitions in OrangeFox Backup.</text>
       </text>
+
       <text style="text_body2">
         <placement x="%col1_x_indent%" y="%row3_1a_y%"/>
         <text>Check storage space and backup destination.</text>
       </text>
+
       <text style="text_body2_fail">
         <placement x="%col1_x_indent%" y="%row4_1a_y%"/>
         <text>This page does not start backup or restore.</text>
       </text>
+
       <listbox style="group_list">
         <placement x="0" y="%row5_1a_y%"
           w="%screen_w%" h="%bl_h1%"/>
+
         <listitem name="Back to OFRescue">
           <action function="page">ofrescue</action>
         </listitem>
@@ -145,25 +163,31 @@
 
     <page name="ofrescue_builder">
       <template name="base"/>
+
       <text style="text_ab_title">
         <placement x="%col1_x_indent%" y="%ab_bc_y%"/>
         <text>Recovery Builder</text>
       </text>
+
       <text style="text_body1">
         <placement x="%col1_x_indent%" y="%row1_1a_y%"/>
         <text>Build target: Boston XT2419-1</text>
       </text>
+
       <text style="text_body2">
         <placement x="%col1_x_indent%" y="%row2_1a_y%"/>
         <text>Recovery builds are handled by GitHub Actions.</text>
       </text>
+
       <text style="text_body2_fail">
         <placement x="%col1_x_indent%" y="%row3_1a_y%"/>
         <text>A source bundle is not a flashable recovery.</text>
       </text>
+
       <listbox style="group_list">
         <placement x="0" y="%row4_1a_y%"
           w="%screen_w%" h="%bl_h1%"/>
+
         <listitem name="Back to OFRescue">
           <action function="page">ofrescue</action>
         </listitem>
