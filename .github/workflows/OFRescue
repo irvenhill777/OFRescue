@@ -1,0 +1,69 @@
+
+name: OFRescue Boston GUI Package
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - Master
+    paths:
+      - 'gui/**'
+      - 'ofrescue/**'
+      - 'README.md'
+      - '.github/workflows/ofrescue.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  package:
+    name: Package Boston Rescue GUI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+
+      - name: Check required files
+        run: |
+          set -e
+
+          test -f gui/theme/portrait_hdpi/pages/ofrescue.xml
+          test -f gui/theme/portrait_hdpi/pages/advanced.xml
+
+          echo "Boston OFRescue GUI files found."
+
+      - name: Validate XML syntax
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          files = [
+              "gui/theme/portrait_hdpi/pages/ofrescue.xml",
+              "gui/theme/portrait_hdpi/pages/advanced.xml"
+          ]
+
+          for file in files:
+              ET.parse(file)
+              print("XML syntax OK:", file)
+          PY
+
+      - name: Create package
+        run: |
+          mkdir -p output
+
+          zip -r output/OFRescue-Boston-GUI.zip \
+            gui \
+            ofrescue \
+            README.md
+
+          echo "Package created."
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: OFRescue-Boston-GUI
+          path: output/OFRescue-Boston-GUI.zip
+          if-no-files-found: error
+          retention-days: 30
