@@ -84,15 +84,19 @@ jobs:
       - name: Show build configuration
         shell: bash
         run: |
+          set -e
           echo "Device: $DEVICE_NAME"
           echo "OrangeFox branch: $FOX_BRANCH"
           echo "Device tree: $DEVICE_TREE_URL"
           echo "Device tree branch: $DEVICE_TREE_BRANCH"
+          echo "Lunch product: $LUNCH_PRODUCT"
+          echo "Build target: $BUILD_TARGET"
           echo "Build directory: $BUILD_DIR"
 
       - name: Install build dependencies
         shell: bash
         run: |
+          set -e
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
             bc \
@@ -158,38 +162,41 @@ jobs:
 
           SYNC_DIR="$RUNNER_TEMP/orangefox-sync"
           SYNC_SCRIPT="$SYNC_DIR/orangefox_sync.sh"
-          PATCH_FILE="$SYNC_DIR/patches/patch-manifest-fox_12.1.diff"
 
-          # Download official OrangeFox sync tools.
           git clone --depth=1 \
             "$MANIFEST_URL" \
             "$SYNC_DIR"
 
-          # Verify sync script.
           if [ ! -f "$SYNC_SCRIPT" ]; then
             echo "::error::OrangeFox sync script not found."
             exit 1
           fi
 
-          # Verify official manifest patch.
-          if [ ! -s "$PATCH_FILE" ]; then
-            echo "::error::Official OrangeFox 12.1 patch not found."
-            find "$SYNC_DIR" -maxdepth 3 -type f
+          if [ ! -d "$SYNC_DIR/patches" ]; then
+            echo "::error::OrangeFox patches directory is missing."
             exit 1
           fi
 
-          # Copy patch to the exact location expected by the script.
           mkdir -p "$GITHUB_WORKSPACE/patches"
 
-          cp "$PATCH_FILE" \
-            "$GITHUB_WORKSPACE/patches/patch-manifest-fox_12.1.diff"
+          cp -a "$SYNC_DIR/patches/." \
+            "$GITHUB_WORKSPACE/patches/"
 
-          # Confirm patch is in place.
-          test -s "$GITHUB_WORKSPACE/patches/patch-manifest-fox_12.1.diff"
+          for patch in \
+            patch-manifest-fox_12.1.diff \
+            patch-system-fox_12.1.diff \
+            patch-vendor-twrp-fox_12.1.diff
+          do
+            if [ ! -s "$GITHUB_WORKSPACE/patches/$patch" ]; then
+              echo "::error::Required OrangeFox patch missing: $patch"
+              echo "Available patches:"
+              find "$SYNC_DIR/patches" -maxdepth 1 -type f -printf '%f\n'
+              exit 1
+            fi
+          done
 
-          echo "OrangeFox 12.1 manifest patch installed."
+          echo "All required OrangeFox patches are installed."
 
-          # Run official sync script.
           chmod +x "$SYNC_SCRIPT"
           cd "$GITHUB_WORKSPACE"
 
@@ -198,6 +205,7 @@ jobs:
             --path "$BUILD_DIR"
 
           echo "OrangeFox synchronization finished."
+
       - name: Verify Android source tree
         shell: bash
         run: |
@@ -206,7 +214,6 @@ jobs:
 
           if [ ! -f build/envsetup.sh ]; then
             echo "::error::Android build/envsetup.sh is missing."
-            echo "OrangeFox source synchronization did not complete correctly."
             exit 1
           fi
 
@@ -253,8 +260,6 @@ jobs:
 
           echo "Loading OrangeFox build environment..."
 
-          # Some OrangeFox setup scripts return status 1
-          # after defining the build commands.
           set +e
           source build/envsetup.sh
           SOURCE_STATUS=$?
@@ -267,11 +272,10 @@ jobs:
             exit 1
           fi
 
-          echo "Selecting Boston recovery product..."
+          echo "Checking Boston lunch product..."
           lunch "${LUNCH_PRODUCT}-eng"
 
           echo "Boston build environment configured."
-
 
       - name: Build Boston recovery image
         shell: bash
@@ -279,30 +283,76 @@ jobs:
           set -e
           cd "$BUILD_DIR"
 
-      - name: Verify recovery image
+          export FOX_BUILD_DEVICE="$DEVICE_NAME"
+          export ALLOW_MISSING_DEPENDENCIES=true
+          export LC_ALL=C
+
+          echo "Reloading Android build environment..."
+
+          set +e
+          source build/envsetup.sh
+          SOURCE_STATUS=$?
+          set -e
+
+          echo "envsetup.sh returned: $SOURCE_STATUS"
+
+          if ! type lunch >/dev/null 2>&1; then
+            echo "::error::lunch command is unavailable."
+            exit 1
+          fi
+
+          echo "Selecting Boston recovery product..."
+          lunch "${LUNCH_PRODUCT}-eng"
+
+          echo "Starting OrangeFox build..."
+          echo "Build target: $BUILD_TARGET"
+
+          mka adbd "$BUILD_TARGET" -j2
+
+          echo "Recovery build command completed."
+
+      - name: Verify and stage recovery image
         shell: bash
         run: |
           set -e
 
-          RECOVERY_IMAGE="$BUILD_DIR/out/target/product/$DEVICE_NAME/recovery.img"
+          OUTPUT_DIR="$BUILD_DIR/out/target/product"
+          mkdir -p "$GITHUB_WORKSPACE/artifacts"
 
-          if [ ! -s "$RECOVERY_IMAGE" ]; then
-            echo "::error::recovery.img was not generated."
-            echo "Build output directory:"
-            ls -lah "$BUILD_DIR/out/target/product/$DEVICE_NAME/" || true
+          echo "Searching for generated recovery image..."
+
+          RECOVERY_IMAGE="$(find "$OUTPUT_DIR" \
+            -type f \
+            -name recovery.img \
+            -size +0c \
+            -print -quit)"
+
+          if [ -z "$RECOVERY_IMAGE" ]; then
+            echo "::error::No non-empty recovery.img was found."
+            echo "Available output directories:"
+            find "$OUTPUT_DIR" -maxdepth 3 -type d 2>/dev/null || true
+            echo "Available image files:"
+            find "$OUTPUT_DIR" -type f \
+              \( -name '*.img' -o -name '*.zip' \) \
+              2>/dev/null || true
             exit 1
           fi
 
-          echo "Recovery image successfully generated."
+          echo "Recovery image found:"
           ls -lh "$RECOVERY_IMAGE"
+
+          cp "$RECOVERY_IMAGE" \
+            "$GITHUB_WORKSPACE/artifacts/recovery.img"
+
+          sha256sum "$GITHUB_WORKSPACE/artifacts/recovery.img"
+
+          echo "Recovery image staged for artifact upload."
 
       - name: Upload Boston recovery artifacts
         uses: actions/upload-artifact@v4
         with:
           name: OFRescue-Boston-Recovery
-          path: |
-            fox_12.1/out/target/product/boston/recovery.img
-            fox_12.1/out/target/product/boston/*.zip
+          path: artifacts/recovery.img
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
