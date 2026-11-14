@@ -1,4 +1,3 @@
-
 name: OFRescue Boston Recovery Build
 
 on:
@@ -12,37 +11,38 @@ on:
         description: 'Manifest branch'
         required: true
         type: string
-      DEVICE_TREE_URL: https://github.com/luhhcarrl2x-commits/android_device_motorola_boston.git
+      DEVICE_TREE_URL:
         description: 'Boston device tree Git URL'
         required: true
+        default: 'https://github.com/luhhcarrl2x-commits/android_device_motorola_boston.git'
         type: string
-   DEVICE_TREE_BRANCH: TWRP
+      DEVICE_TREE_BRANCH:
         description: 'Device tree branch'
         required: true
+        default: 'TWRP'
         type: string
-      DEVICE_PATH: device/motorola/boston
+      DEVICE_PATH:
         description: 'Device tree path inside source'
         required: true
         default: 'device/motorola/boston'
         type: string
-      DEVICE_NAME: boston
+      DEVICE_NAME:
         description: 'Device codename'
         required: true
         default: 'boston'
         type: string
-      MAKEFILE_NAME: twrp_boston
+      MAKEFILE_NAME:
         description: 'Lunch product name without -eng'
         required: true
+        default: 'twrp_boston'
         type: string
-      BUILD_TARGET: recovery
+      BUILD_TARGET:
         description: 'Build target'
         required: true
         default: 'recovery'
         type: choice
         options:
           - recovery
-          - boot
-          - vendorboot
       USER_NAME:
         description: 'Git username'
         required: true
@@ -101,8 +101,7 @@ jobs:
           done
 
           case "$MANIFEST_URL" in
-            https://*|git@github.com:*)
-              ;;
+            https://*|git@github.com:*) ;;
             *)
               echo "::error::Unsupported manifest URL."
               exit 1
@@ -110,8 +109,7 @@ jobs:
           esac
 
           case "$DEVICE_TREE_URL" in
-            https://*|git@github.com:*)
-              ;;
+            https://*|git@github.com:*) ;;
             *)
               echo "::error::Unsupported device tree URL."
               exit 1
@@ -135,18 +133,15 @@ jobs:
             exit 1
           fi
 
-          case "$BUILD_TARGET" in
-            recovery|boot|vendorboot)
-              ;;
-            *)
-              echo "::error::Unsupported build target."
-              exit 1
-              ;;
-          esac
+          if [ "$BUILD_TARGET" != "recovery" ]; then
+            echo "::error::Only the recovery target is enabled."
+            exit 1
+          fi
 
           echo "Build inputs passed validation."
           echo "Device: $DEVICE_NAME"
           echo "Device path: $DEVICE_PATH"
+          echo "Lunch product: $MAKEFILE_NAME"
           echo "Build target: $BUILD_TARGET"
 
       - name: Install build dependencies
@@ -247,12 +242,11 @@ jobs:
             "$DEVICE_TREE_URL" \
             "$DEVICE_PATH"
 
-          if [ ! -d "$DEVICE_PATH" ]; then
-            echo "::error::Device tree directory was not created."
-            exit 1
-          fi
+          test -f "$DEVICE_PATH/AndroidProducts.mk"
+          test -f "$DEVICE_PATH/BoardConfig.mk"
+          test -f "$DEVICE_PATH/twrp_boston.mk"
 
-          echo "Device tree cloned successfully."
+          echo "Boston device tree cloned and checked."
 
       - name: Configure swap space
         uses: pierotofy/set-swap-space@master
@@ -265,18 +259,13 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [ ! -f build/envsetup.sh ]; then
-            echo "::error::Missing build/envsetup.sh."
-            exit 1
-          fi
+          test -f build/envsetup.sh
 
-          if [ ! -f "$DEVICE_PATH/AndroidProducts.mk" ] &&
-             [ ! -f "$DEVICE_PATH/BoardConfig.mk" ]; then
-            echo "::error::Device tree build files were not found."
-            exit 1
-          fi
+          test -f "$DEVICE_PATH/AndroidProducts.mk"
+          test -f "$DEVICE_PATH/BoardConfig.mk"
+          test -f "$DEVICE_PATH/twrp_boston.mk"
 
-          echo "Build configuration files found."
+          echo "Boston build configuration files found."
 
       - name: Build recovery image
         shell: bash
@@ -287,12 +276,12 @@ jobs:
           source build/envsetup.sh
 
           export ALLOW_MISSING_DEPENDENCIES=true
+          export FOX_BUILD_DEVICE="$DEVICE_NAME"
+          export LC_ALL=C
 
           lunch "${MAKEFILE_NAME}-eng"
 
-          make clean
-
-          make "${BUILD_TARGET}image" -j2
+          mka -j2 adbd recoveryimage
 
       - name: Verify build output
         shell: bash
@@ -309,12 +298,13 @@ jobs:
 
           find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.img' -print
 
-          if [ ! -f "$OUTPUT_DIR/${BUILD_TARGET}.img" ]; then
-            echo "::error::Expected image was not produced."
+          if [ ! -f "$OUTPUT_DIR/recovery.img" ]; then
+            echo "::error::Expected recovery.img was not produced."
             exit 1
           fi
 
-          echo "Build output verified."
+          echo "Recovery image found."
+          sha256sum "$OUTPUT_DIR/recovery.img"
 
       - name: Upload recovery artifacts
         uses: actions/upload-artifact@v4
