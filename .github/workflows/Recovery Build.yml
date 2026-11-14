@@ -12,29 +12,29 @@ on:
         description: 'Manifest branch'
         required: true
         type: string
-      DEVICE_TREE_URL:
+      DEVICE_TREE_URL: https://github.com/luhhcarrl2x-commits/android_device_motorola_boston.git
         description: 'Boston device tree Git URL'
         required: true
         type: string
-      DEVICE_TREE_BRANCH:
+   DEVICE_TREE_BRANCH: TWRP
         description: 'Device tree branch'
         required: true
         type: string
-      DEVICE_PATH:
+      DEVICE_PATH: device/motorola/boston
         description: 'Device tree path inside source'
         required: true
         default: 'device/motorola/boston'
         type: string
-      DEVICE_NAME:
+      DEVICE_NAME: boston
         description: 'Device codename'
         required: true
         default: 'boston'
         type: string
-      MAKEFILE_NAME:
+      MAKEFILE_NAME: twrp_boston
         description: 'Lunch product name without -eng'
         required: true
         type: string
-      BUILD_TARGET:
+      BUILD_TARGET: recovery
         description: 'Build target'
         required: true
         default: 'recovery'
