@@ -137,17 +137,31 @@ jobs:
         shell: bash
         run: |
           set -e
+
+          # Clone the sync tools from their default branch.
           git clone --depth=1 \
-            --branch "$FOX_BRANCH" \
             "$MANIFEST_URL" \
             "$RUNNER_TEMP/orangefox-sync"
 
-          echo "OrangeFox sync repository downloaded."
-          find "$RUNNER_TEMP/orangefox-sync" \
-            -maxdepth 4 \
+          echo "OrangeFox sync tools downloaded."
+
+          # Locate the sync script.
+          SYNC_SCRIPT="$(find "$RUNNER_TEMP/orangefox-sync" \
             -type f \
             -name 'orangefox_sync.sh' \
-            -print
+            -print -quit)"
+
+          if [ -z "$SYNC_SCRIPT" ]; then
+            echo "::error::OrangeFox sync script was not found."
+            exit 1
+          fi
+
+          chmod +x "$SYNC_SCRIPT"
+
+          # Use 12.1 as the OrangeFox manifest version.
+          bash "$SYNC_SCRIPT" \
+            --branch "$FOX_BRANCH" \
+            --path "$BUILD_DIR"
 
       - name: Initialize and sync OrangeFox sources
         shell: bash
