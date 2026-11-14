@@ -491,6 +491,13 @@
 					<action function="set">fox_install_built_in_zip=1</action>
 					<action function="queuezip"/>
 					<action function="set">tw_notexip</action>
+					<action function="set">tw_notexistpage=fox_modules_confirm</action>
+					<action function="set">tw_existpage=fox_modules_confirm</action>
+					<action function="page">filecheck</action>
+				</listitem>
+			</listbox>
+		</page>
+		
 				<action function="set">tw_filename=/FFiles/OF_Del_Survival/OF_Del_Survival.zip</action>
 				<action function="set">tw_filecheck=%tw_filename%</action>
 				<action function="set">tw_zip_location=/FFiles/OF_Del_Survival</action>
