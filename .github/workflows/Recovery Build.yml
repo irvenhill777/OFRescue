@@ -168,26 +168,39 @@ jobs:
         run: |
           set -e
 
-          SYNC_SCRIPT="$(find "$RUNNER_TEMP/orangefox-sync" \
-            -type f \
-            -name 'orangefox_sync.sh' \
-            -print -quit)"
+          SYNC_DIR="$RUNNER_TEMP/orangefox-sync"
+          SYNC_SCRIPT="$SYNC_DIR/orangefox_sync.sh"
 
-          if [ -z "$SYNC_SCRIPT" ]; then
-            echo "::error::orangefox_sync.sh was not found in the sync repository."
-            echo "Repository contents:"
-            find "$RUNNER_TEMP/orangefox-sync" -maxdepth 3 -type f
+          if [ ! -f "$SYNC_SCRIPT" ]; then
+            echo "::error::OrangeFox sync script is missing."
             exit 1
           fi
 
-          mkdir -p "$BUILD_DIR"
-          cd "$(dirname "$SYNC_SCRIPT")"
+          if [ ! -d "$SYNC_DIR/patches" ]; then
+            echo "::error::Official OrangeFox patches folder is missing."
+            exit 1
+          fi
 
-          chmod +x "$SYNC_SCRIPT"
+          # Place official patches where the sync script expects them.
+          mkdir -p "$GITHUB_WORKSPACE/patches"
+          cp -a "$SYNC_DIR/patches/." "$GITHUB_WORKSPACE/patches/"
+
+          # Confirm the required 12.1 patch exists.
+          if [ ! -s "$GITHUB_WORKSPACE/patches/patch-manifest-fox_12.1.diff" ]; then
+            echo "::error::Required OrangeFox 12.1 manifest patch is missing."
+            exit 1
+          fi
+
+          echo "OrangeFox 12.1 patch verified."
+
+          # Run from the workspace so relative patch paths resolve.
+          cd "$GITHUB_WORKSPACE"
 
           bash "$SYNC_SCRIPT" \
             --branch "$FOX_BRANCH" \
             --path "$BUILD_DIR"
+
+          echo "OrangeFox source synchronization completed."
 
       - name: Verify Android source tree
         shell: bash
