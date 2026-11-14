@@ -8,7 +8,6 @@ on:
       - Master
     paths:
       - 'gui/**'
-      - 'ofrescue/**'
       - 'README.md'
       - '.github/workflows/ofrescue.yml'
 
@@ -17,30 +16,14 @@ permissions:
 
 jobs:
   package:
-    name: Validate and Package OFRescue Sources
+    name: Validate and Package OFRescue
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Prepare package directory
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          mkdir -p package output
-          cp README.md package/README.md
-
-          if [ -d gui ]; then
-            cp -R gui package/gui
-          fi
-
-          if [ -d ofrescue ]; then
-            cp -R ofrescue package/ofrescue
-          fi
-
-      - name: Validate available XML files
+      - name: Validate XML files
         shell: bash
         run: |
           set -euo pipefail
@@ -50,64 +33,113 @@ jobs:
           import sys
           import xml.etree.ElementTree as ET
 
-          gui = Path("gui")
-          xml_files = sorted(gui.rglob("*.xml")) if gui.exists() else []
-
-          if not xml_files:
-              print("NOTICE: No GUI XML files are in the repository yet.")
-              print("This run creates a source bundle, not a flashable recovery.")
-              raise SystemExit(0)
+          required = [
+              Path("gui/theme/portrait_hdpi/pages/advanced.xml"),
+              Path("gui/theme/portrait_hdpi/pages/ofrescue.xml"),
+          ]
 
           failed = False
-          for path in xml_files:
-              try:
-                  ET.parse(path)
-                  print(f"XML syntax OK: {path}")
-              except ET.ParseError as exc:
-                  print(f"XML SYNTAX ERROR: {path}: {exc}")
+
+          for path in required:
+              if not path.is_file():
+                  print(f"ERROR: Missing required file: {path}")
                   failed = True
 
           if failed:
-              raise SystemExit(1)
+              sys.exit(1)
+
+          xml_files = sorted(Path("gui").rglob("*.xml"))
+
+          for path in xml_files:
+              try:
+                  root = ET.parse(path).getroot()
+                  if root.tag != "recovery":
+                      raise ValueError(
+                          f"Expected recovery root, found {root.tag}"
+                      )
+                  print(f"XML syntax OK: {path}")
+              except (ET.ParseError, ValueError) as exc:
+                  print(f"XML ERROR: {path}: {exc}")
+                  failed = True
+
+          if failed:
+              sys.exit(1)
+
+          page_file = Path(
+              "gui/theme/portrait_hdpi/pages/ofrescue.xml"
+          )
+          root = ET.parse(page_file).getroot()
+
+          pages = {
+              page.attrib.get("name")
+              for page in root.findall(".//page")
+          }
+
+          expected_pages = {
+              "ofrescue",
+              "ofrescue_info",
+              "ofrescue_diagnostics",
+              "ofrescue_backup",
+              "ofrescue_builder",
+          }
+
+          missing = expected_pages - pages
+
+          if missing:
+              print("ERROR: Missing OFRescue pages:", sorted(missing))
+              sys.exit(1)
+
+          print("All required OFRescue pages found.")
+          print("XML validation completed successfully.")
           PY
 
-      - name: Mark package readiness
+      - name: Prepare source package
         shell: bash
         run: |
           set -euo pipefail
 
-          GUI_PAGE="gui/theme/portrait_hdpi/pages/ofrescue.xml"
+          rm -rf package output
+          mkdir -p package output
 
-          if [ -f "$GUI_PAGE" ]; then
-            cat > package/PACKAGE-STATUS.txt <<'EOF'
-          OFRescue Boston source bundle
-          GUI page source was found and XML syntax validation passed.
-          This package is not a flashable recovery image.
-          OrangeFox 12.1 integration and device-specific build testing are still required.
-          EOF
-          else
-            cat > package/PACKAGE-STATUS.txt <<'EOF'
-          OFRescue Boston source bundle — NOT GUI COMPLETE
-          The expected GUI page is missing:
-          gui/theme/portrait_hdpi/pages/ofrescue.xml
+          cp README.md package/README.md
+          cp -R gui package/gui
 
-          This artifact only packages files currently in the repository.
-          It is NOT a flashable recovery, installer ZIP, or completed touchscreen interface.
-          Add and validate the OrangeFox 12.1 GUI source before recovery integration.
+          cat > package/PACKAGE-STATUS.txt <<'EOF'
+          OFRescue Boston Source Bundle
+
+          Target device:
+          Motorola Moto G Stylus 5G 2024
+          Model: XT2419-1
+          Codename: Boston
+
+          Recovery target:
+          OrangeFox Recovery 12.1
+
+          Package contents:
+          - GUI XML source files
+          - Project documentation
+
+          Safety:
+          This is a source package only.
+          It is NOT a flashable recovery image.
+          It does not perform partition flashing,
+          wiping, formatting, backup, or restore.
+
+          Device-specific integration and hardware testing
+          are still required.
           EOF
-          fi
 
           echo "Package contents:"
-          find package -maxdepth 5 -type f -print
+          find package -type f -print
 
-      - name: Create ZIP
+      - name: Create source ZIP
         shell: bash
         run: |
           set -euo pipefail
           cd package
           zip -qr ../output/OFRescue-Boston-Source-Bundle.zip .
 
-      - name: Upload artifact
+      - name: Upload source artifact
         uses: actions/upload-artifact@v4
         with:
           name: OFRescue-Boston-Source-Bundle
