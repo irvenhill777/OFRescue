@@ -251,25 +251,29 @@ jobs:
           export ALLOW_MISSING_DEPENDENCIES=true
           export LC_ALL=C
 
+          echo "Checking Android build environment..."
+          echo "Current directory: $(pwd)"
+
+          test -f build/envsetup.sh
+
+          echo "Loading build/envsetup.sh..."
+          set -x
           source build/envsetup.sh
 
+          echo "Checking lunch command..."
+          type lunch
+
+          echo "Selecting Boston recovery product..."
           lunch "${LUNCH_PRODUCT}-eng"
+
+          set +x
+          echo "Build environment configured."
 
       - name: Build Boston recovery image
         shell: bash
         run: |
           set -e
           cd "$BUILD_DIR"
-
-          export FOX_BUILD_DEVICE="$DEVICE_NAME"
-          export ALLOW_MISSING_DEPENDENCIES=true
-          export LC_ALL=C
-
-          source build/envsetup.sh
-          lunch "${LUNCH_PRODUCT}-eng"
-
-          echo "Starting recovery build..."
-          mka -j2 adbd "$BUILD_TARGET"
 
       - name: Verify recovery image
         shell: bash
