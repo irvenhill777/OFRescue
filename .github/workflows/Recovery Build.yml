@@ -133,6 +133,24 @@ jobs:
           git config --global user.name "OFRescue Builder"
           git config --global user.email "ofrescue-builder@users.noreply.github.com"
 
+      - name: Install Google Repo tool
+        shell: bash
+        run: |
+          set -e
+
+          curl -fsSL \
+            https://storage.googleapis.com/git-repo-downloads/repo \
+            -o "$RUNNER_TEMP/repo"
+
+          chmod +x "$RUNNER_TEMP/repo"
+
+          sudo install -m 0755 \
+            "$RUNNER_TEMP/repo" \
+            /usr/local/bin/repo
+
+          echo "Google Repo tool installed."
+          repo --version
+
       - name: Clone and sync OrangeFox sources
         shell: bash
         run: |
