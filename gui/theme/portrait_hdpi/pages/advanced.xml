@@ -1,3 +1,4 @@
+
 <?xml version="1.0"?>
 <recovery>
 	<pages>
@@ -174,7 +175,7 @@
 <!--				<placement x="%center_x%" y="%ab_bc_double_d_y%" placement="5"/>-->
 <!--				<text>Recovery</text>-->
 <!--			</text>-->
-			
+
 			<template name="gestures_basic"/>
 
 			<action>
@@ -189,7 +190,6 @@
 		</page>
 
 		<page name="part_manage">
-
 			<text style="text_body2_hl">
 				<placement x="%gl_text_x%" y="%row0_y%"/>
 				<text>{@listbox_group_static_part}</text>
@@ -361,54 +361,54 @@
 		</page>
 
 		<page name="mod_kernelsu">
-		  <action>
-			<action function="queueclear"/>
-			<action function="set">fox_m_author=KernelSU Team</action>
-			<action function="set">fox_m_name={@module_install} KernelSU</action>
-			<action function="set">tw_file=KernelSU_Installer.zip</action>
-			<action function="set">tw_filename=/FFiles/KernelSU/KernelSU_Installer.zip</action>
-			<action function="set">tw_filecheck=%tw_filename%</action>
-			<action function="set">tw_zip_location=/FFiles/KernelSU</action>
-			<action function="set">fox_install_built_in_zip=1</action>
-			<action function="queuezip"/>
-			<action function="set">tw_notexistpage=fox_modules_confirm</action>
-			<action function="set">tw_existpage=fox_modules_confirm</action>
-			<action function="page">filecheck</action>
-		  </action>
+			<action>
+				<action function="queueclear"/>
+				<action function="set">fox_m_author=KernelSU Team</action>
+				<action function="set">fox_m_name={@module_install} KernelSU</action>
+				<action function="set">tw_file=KernelSU_Installer.zip</action>
+				<action function="set">tw_filename=/FFiles/KernelSU/KernelSU_Installer.zip</action>
+				<action function="set">tw_filecheck=%tw_filename%</action>
+				<action function="set">tw_zip_location=/FFiles/KernelSU</action>
+				<action function="set">fox_install_built_in_zip=1</action>
+				<action function="queuezip"/>
+				<action function="set">tw_notexistpage=fox_modules_confirm</action>
+				<action function="set">tw_existpage=fox_modules_confirm</action>
+				<action function="page">filecheck</action>
+			</action>
 		</page>
 
 		<page name="mod_kernelsu_next">
-		  <action>
-			<action function="queueclear"/>
-			<action function="set">fox_m_author=KernelSU Team</action>
-			<action function="set">fox_m_name={@module_install} KernelSU Next</action>
-			<action function="set">tw_file=KernelSU_Next_Installer.zip</action>
-			<action function="set">tw_filename=/FFiles/KernelSU/KernelSU_Next_Installer.zip</action>
-			<action function="set">tw_filecheck=%tw_filename%</action>
-			<action function="set">tw_zip_location=/FFiles/KernelSU</action>
-			<action function="set">fox_install_built_in_zip=1</action>
-			<action function="queuezip"/>
-			<action function="set">tw_notexistpage=fox_modules_confirm</action>
-			<action function="set">tw_existpage=fox_modules_confirm</action>
-			<action function="page">filecheck</action>
-		  </action>
+			<action>
+				<action function="queueclear"/>
+				<action function="set">fox_m_author=KernelSU Team</action>
+				<action function="set">fox_m_name={@module_install} KernelSU Next</action>
+				<action function="set">tw_file=KernelSU_Next_Installer.zip</action>
+				<action function="set">tw_filename=/FFiles/KernelSU/KernelSU_Next_Installer.zip</action>
+				<action function="set">tw_filecheck=%tw_filename%</action>
+				<action function="set">tw_zip_location=/FFiles/KernelSU</action>
+				<action function="set">fox_install_built_in_zip=1</action>
+				<action function="queuezip"/>
+				<action function="set">tw_notexistpage=fox_modules_confirm</action>
+				<action function="set">tw_existpage=fox_modules_confirm</action>
+				<action function="page">filecheck</action>
+			</action>
 		</page>
 
 		<page name="mod_sukisu">
-		  <action>
-			<action function="queueclear"/>
-			<action function="set">fox_m_author=SukiSU Team</action>
-			<action function="set">fox_m_name={@module_install} SukiSU Ultra 3.1.8</action>
-			<action function="set">tw_file= KernelSU_Suki_Installer.zip</action>
-			<action function="set">tw_filename=/FFiles/KernelSU/KernelSU_Suki_Installer.zip</action>
-			<action function="set">tw_filecheck=%tw_filename%</action>
-			<action function="set">tw_zip_location=/FFiles/KernelSU</action>
-			<action function="set">fox_install_built_in_zip=1</action>
-			<action function="queuezip"/>
-			<action function="set">tw_notexistpage=fox_modules_confirm</action>
-			<action function="set">tw_existpage=fox_modules_confirm</action>
-			<action function="page">filecheck</action>
-		  </action>
+			<action>
+				<action function="queueclear"/>
+				<action function="set">fox_m_author=SukiSU Team</action>
+				<action function="set">fox_m_name={@module_install} SukiSU Ultra 3.1.8</action>
+				<action function="set">tw_file= KernelSU_Suki_Installer.zip</action>
+				<action function="set">tw_filename=/FFiles/KernelSU/KernelSU_Suki_Installer.zip</action>
+				<action function="set">tw_filecheck=%tw_filename%</action>
+				<action function="set">tw_zip_location=/FFiles/KernelSU</action>
+				<action function="set">fox_install_built_in_zip=1</action>
+				<action function="queuezip"/>
+				<action function="set">tw_notexistpage=fox_modules_confirm</action>
+				<action function="set">tw_existpage=fox_modules_confirm</action>
+				<action function="page">filecheck</action>
+			</action>
 		</page>
 
 		<page name="fox_modules">
@@ -459,6 +459,7 @@
 					<action function="set">tw_existpage=fox_modules_confirm</action>
 					<action function="page">filecheck</action>
 				</listitem>
+
 				<listitem name="OrangeFox: {@dialog_reset_theme_hdr}">
 					<condition var1="fileexists" var2="/FFiles/OF_reset/OF_reset.zip"/>
 					<icon res="archive"/>
@@ -490,245 +491,11 @@
 					<action function="set">tw_zip_location=/FFiles/OF_DelFiles</action>
 					<action function="set">fox_install_built_in_zip=1</action>
 					<action function="queuezip"/>
-					<action function="set">tw_notexip</action>
 					<action function="set">tw_notexistpage=fox_modules_confirm</action>
 					<action function="set">tw_existpage=fox_modules_confirm</action>
 					<action function="page">filecheck</action>
-				</listitem>
-			</listbox>
-		</page>
-		
-				<action function="set">tw_filename=/FFiles/OF_Del_Survival/OF_Del_Survival.zip</action>
-				<action function="set">tw_filecheck=%tw_filename%</action>
-				<action function="set">tw_zip_location=/FFiles/OF_Del_Survival</action>
-				<action function="set">fox_install_built_in_zip=1</action>
-				<action function="queuezip"/>
-				<action function="set">tw_notexistpage=fox_modules_confirm</action>
-				<action function="set">tw_existpage=fox_modules_confirm</action>
-				<action function="page">filecheck</action>
-			</action>
-		</page>
-
-		<page name="mod_factory_rp">
-			<action>
-				<action function="queueclear"/>
-				<action function="set">fox_m_author=DarthJabba9</action>
-				<action function="set">fox_m_name={@remove_factory_reset_protection}</action>
-				<action function="set">tw_file=OF_DelFRP.zip</action>
-				<action function="set">tw_filename=/FFiles/OF_DelFRP/OF_DelFRP.zip</action>
-				<action function="set">tw_filecheck=%tw_filename%</action>
-				<action function="set">tw_zip_location=/FFiles/OF_DelFRP</action>
-				<action function="set">fox_install_built_in_zip=1</action>
-				<action function="queuezip"/>
-				<action function="set">tw_notexistpage=fox_modules_confirm</action>
-				<action function="set">tw_existpage=fox_modules_confirm</action>
-				<action function="page">filecheck</action>
-			</action>
-		</page>
-
-		<page name="mod_magisk">
-			<action>
-				<action function="queueclear"/>
-				<action function="set">fox_m_author=topjohnwu</action>
-				<action function="set">fox_m_name={@module_install} Magisk %magisk_ver%</action>
-				<action function="set">tw_file=%fox_magisk_zip_installer%</action>
-				<action function="set">tw_filename=%fox_magisk_path%/%fox_magisk_zip_installer%</action>
-				<action function="set">tw_filecheck=%tw_filename%</action>
-				<action function="set">tw_zip_location=%fox_magisk_path%</action>
-				<action function="set">fox_install_built_in_zip=1</action>
-				<action function="queuezip"/>
-				<action function="set">tw_notexistpage=fox_modules_confirm</action>
-				<action function="set">tw_existpage=fox_modules_confirm</action>
-				<action function="page">filecheck</action>
-			</action>
-		</page>
-
-		<page name="mod_unmagisk">
-			<action>
-				<action function="queueclear"/>
-				<action function="set">fox_m_author=topjohnwu</action>
-				<action function="set">fox_m_name={@module_uninstall} Magisk</action>
-				<action function="set">tw_file=%fox_magisk_uninstaller%</action>
-				<action function="set">tw_filename=%fox_magisk_path%/%fox_magisk_uninstaller%</action>
-				<action function="set">tw_filecheck=%tw_filename%</action>
-				<action function="set">tw_zip_location=%fox_magisk_path%</action>
-				<action function="set">fox_install_built_in_zip=1</action>
-				<action function="queuezip"/>
-				<action function="set">tw_notexistpage=fox_modules_confirm</action>
-				<action function="set">tw_existpage=fox_modules_confirm</action>
-				<action function="page">filecheck</action>
-			</action>
-		</page>
-
-		<page name="mod_reset">
-			<action>
-				<action function="queueclear"/>
-				<action function="set">fox_m_author=DarthJabba9</action>
-				<action function="set">fox_m_name=OrangeFox: {@dialog_reset_theme_hdr}</action>
-				<action function="set">tw_file=OF_reset.zip</action>
-				<action function="set">tw_filename=/FFiles/OF_reset/OF_reset.zip</action>
-				<action function="set">tw_filecheck=%tw_filename%</action>
-				<action function="set">tw_zip_location=/FFiles/OF_reset</action>
-				<action function="set">fox_install_built_in_zip=1</action>
-				<action function="queuezip"/>
-				<action function="set">tw_notexistpage=fox_modules_confirm</action>
-				<action function="set">tw_existpage=fox_modules_confirm</action>
-				<action function="page">filecheck</action>
-			</action>
-		</page>
-
-		<page name="mod_pass">
-			<action>
-				<action function="queueclear"/>
-				<action function="set">fox_m_author=DarthJabba9</action>
-				<action function="set">fox_m_name={@module_pass}</action>
-				<action function="set">tw_file=OF_DelPass.zip</action>
-				<action function="set">tw_filename=/FFiles/OF_DelPass/OF_DelPass.zip</action>
-				<action function="set">tw_filecheck=%tw_filename%</action>
-				<action function="set">tw_zip_location=/FFiles/OF_DelPass</action>
-				<action function="set">fox_install_built_in_zip=1</action>
-				<action function="queuezip"/>
-				<action function="set">tw_notexistpage=fox_modules_confirm</action>
-				<action function="set">tw_existpage=fox_modules_confirm</action>
-				<action function="page">filecheck</action>
-			</action>
-		</page>
-
-		<page name="mod_kernelsu">
-		  <action>
-			<action function="queueclear"/>
-			<action function="set">fox_m_author=KernelSU Team</action>
-			<action function="set">fox_m_name={@module_install} KernelSU</action>
-			<action function="set">tw_file=KernelSU_Installer.zip</action>
-			<action function="set">tw_filename=/FFiles/KernelSU/KernelSU_Installer.zip</action>
-			<action function="set">tw_filecheck=%tw_filename%</action>
-			<action function="set">tw_zip_location=/FFiles/KernelSU</action>
-			<action function="set">fox_install_built_in_zip=1</action>
-			<action function="queuezip"/>
-			<action function="set">tw_notexistpage=fox_modules_confirm</action>
-			<action function="set">tw_existpage=fox_modules_confirm</action>
-			<action function="page">filecheck</action>
-		  </action>
-		</page>
-
-		<page name="mod_kernelsu_next">
-		  <action>
-			<action function="queueclear"/>
-			<action function="set">fox_m_author=KernelSU Team</action>
-			<action function="set">fox_m_name={@module_install} KernelSU Next</action>
-			<action function="set">tw_file=KernelSU_Next_Installer.zip</action>
-			<action function="set">tw_filename=/FFiles/KernelSU/KernelSU_Next_Installer.zip</action>
-			<action function="set">tw_filecheck=%tw_filename%</action>
-			<action function="set">tw_zip_location=/FFiles/KernelSU</action>
-			<action function="set">fox_install_built_in_zip=1</action>
-			<action function="queuezip"/>
-			<action function="set">tw_notexistpage=fox_modules_confirm</action>
-			<action function="set">tw_existpage=fox_modules_confirm</action>
-			<action function="page">filecheck</action>
-		  </action>
-		</page>
-
-		<page name="mod_sukisu">
-		  <action>
-			<action function="queueclear"/>
-			<action function="set">fox_m_author=SukiSU Team</action>
-			<action function="set">fox_m_name={@module_install} SukiSU Ultra 3.1.8</action>
-			<action function="set">tw_file= KernelSU_Suki_Installer.zip</action>
-			<action function="set">tw_filename=/FFiles/KernelSU/KernelSU_Suki_Installer.zip</action>
-			<action function="set">tw_filecheck=%tw_filename%</action>
-			<action function="set">tw_zip_location=/FFiles/KernelSU</action>
-			<action function="set">fox_install_built_in_zip=1</action>
-			<action function="queuezip"/>
-			<action function="set">tw_notexistpage=fox_modules_confirm</action>
-			<action function="set">tw_existpage=fox_modules_confirm</action>
-			<action function="page">filecheck</action>
-		  </action>
-		</page>
-
-		<page name="fox_modules">
-			<action>
-				<action function="set">install_back=fox_modules</action>
-				<action function="set">aroma_help=0</action>
-			</action>
-
-			<!-- fox_modules_confirm located in install.xml -->
-
-			<text style="caption">
-				<placement x="%gl_text_x%" y="%row1_1_y%"/>
-				<text>Magisk</text>
-			</text>
-
-			<listbox style="group_list">
-				<placement x="0" y="%row1_2_y%" w="%screen_w%" h="%bl_h2%"/>
-				<listitem name="{@module_install} Magisk %magisk_ver%">
-					<icon res="archive"/>
-					<action function="page">mod_magisk</action>
-				</listitem>
-				<listitem name="{@module_uninstall} Magisk">
-					<icon res="archive"/>
-					<action function="page">mod_unmagisk</action>
-				</listitem>
-			</listbox>
-
-			<text style="caption">
-				<placement x="%gl_text_x%" y="%row3_1a_y%"/>
-				<text>{@cust_oth}</text>
-			</text>
-
-			<listbox style="group_list">
-				<placement x="0" y="%row3_2a_y%" w="%screen_w%" h="%bl_h4%"/>
-				<listitem name="{@module_of_set}">
-					<condition var1="fileexists" var2="/FFiles/OF_backup_settings/OF_backup_settings.zip"/>
-					<icon res="archive"/>
-					<action function="queueclear"/>
-					<action function="set">fox_m_author=DarthJabba9</action>
-					<action function="set">fox_m_name={@module_of_set}</action>
-					<action function="set">tw_file=OF_backup_settings.zip</action>
-					<action function="set">tw_filename=/FFiles/OF_backup_settings/OF_backup_settings.zip</action>
-					<action function="set">tw_filecheck=%tw_filename%</action>
-					<action function="set">tw_zip_location=/FFiles/OF_backup_settings</action>
-					<action function="set">fox_install_built_in_zip=1</action>
-					<action function="queuezip"/>
-					<action function="set">tw_notexistpage=fox_modules_confirm</action>
-					<action function="set">tw_existpage=fox_modules_confirm</action>
-					<action function="page">filecheck</action>
-				</listitem>
-				<listitem name="OrangeFox: {@dialog_reset_theme_hdr}">
-					<condition var1="fileexists" var2="/FFiles/OF_reset/OF_reset.zip"/>
-					<icon res="archive"/>
-					<action function="page">mod_reset</action>
-				</listitem>
-
-				<listitem name="{@module_pass}">
-					<condition var1="fileexists" var2="/FFiles/OF_DelPass/OF_DelPass.zip"/>
-					<icon res="archive"/>
-					<action function="page">mod_pass</action>
-				</listitem>
-
-				<listitem name="{@module_remove_survival}">
-					<condition var1="fileexists" var2="/FFiles/OF_Del_Survival/OF_Del_Survival.zip"/>
-					<condition var1="fox_branch" op="&gt;=" var2="10"/>
-					<icon res="archive"/>
-					<action function="page">mod_survival</action>
-				</listitem>
-
-				<listitem name="{@remove_of_files}">
-					<condition var1="fileexists" var2="/FFiles/OF_DelFiles/OF_DelFiles.zip"/>
-					<icon res="archive"/>
-					<action function="queueclear"/>
-					<action function="set">fox_m_author=DarthJabba9</action>
-					<action function="set">fox_m_name={@remove_of_files}</action>
-					<action function="set">tw_file=OF_DelFiles.zip</action>
-					<action function="set">tw_filename=/FFiles/OF_DelFiles/OF_DelFiles.zip</action>
-					<action function="set">tw_filecheck=%tw_filename%</action>
-					<action function="set">tw_zip_location=/FFiles/OF_DelFiles</action>
-					<action function="set">fox_install_built_in_zip=1</action>
-					<action function="queuezip"/>
-					<action function="set">tw_notexistpage=fox_modules_confirm</action>
-					<action function="set">tw_existpage=fox_modules_confirm</action>
-			       	<action function="page">filecheck</action>
 				</listitem>
 			</listbox>
 		</page>
 	</pages>
-</recovery>                    
+</recovery>
