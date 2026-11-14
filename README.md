@@ -1,76 +1,114 @@
-# PBRP Recovery Builder
 
-This GitHub Actions workflow automates the compilation of PitchBlack Recovery Project (PBRP) images for Android devices.
+# OFRescue Boston
 
-## Workflow Dispatch
+### OrangeFox Recovery 12.1 - Rescue Center GUI
 
-Triggered manually via the `workflow_dispatch` event with customizable inputs.
+OFRescue Boston is an informational touchscreen rescue interface project for the:
 
-## Inputs Parameter Description
+- **Device:** Motorola Moto G Stylus 5G 2024
+- **Model:** XT2419-1
+- **Codename:** Boston
+- **Recovery target:** OrangeFox Recovery 12.1
+- **Interface:** Android recovery touchscreen GUI
 
-Here are the inputs required for the `PBRP-RECOVERY-BUILDER` workflow:
+---
 
-| Name | Description | Example |
-| ---- | ----------- | ------- |
-| `MANIFEST_URL` | Git URL of the PBRP manifest repository. | `https://github.com/PitchBlackRecoveryProject/manifest_pb.git` |
-| `MANIFEST_BRANCH` | Branch name of the PBRP manifest to sync. | `android-11.0` |
-| `DEVICE_TREE_URL` | Git URL of the device-specific repository. | `https://github.com/PitchBlackRecoveryProject/android_device_samsung_m21.git` |
-| `DEVICE_TREE_BRANCH` | Branch name of the device-specific repository. | `android-11.0` |
-| `DEVICE_PATH` | Directory path to clone the device tree into. | `device/samsung/m21` |
-| `DEVICE_NAME` | Codename or model name of the device. | `m21` |
-| `MAKEFILE_NAME` | Name of the makefile to initiate the build. | `pbrp_m21` |
-| `BUILD_TARGET` | Target partition to build (e.g., boot, recovery, vendorboot). | `recovery` |
-| `user` | Your GitHub username for commits. | `JohnDoe` |
-| `USER_EMAIL` | Email address associated with your GitHub account. | `johndoe@example.com` |
+## Project Goals
 
-## Jobs
+OFRescue aims to provide a simple, organized recovery interface with:
 
-### Build
+1. Device Information
+2. Bootloop Diagnostics
+3. Partition Backup Guidance
+4. Recovery Builder Status
+5. Safe navigation through recovery tools
 
-Triggered by the repository owner and runs on the latest Ubuntu runner. It includes steps for setting up the environment, syncing repositories, compiling the recovery image, and uploading the build artifacts to a new release.
+## Safety First
 
-## Steps
+OFRescue is designed around a safety-first approach.
 
-1. **Display Run Parameters**: Outputs user-defined environment variables.
-2. **Check Out**: Uses `actions/checkout@v4` to check out the repository.
-3. **Cleanup**: Utilizes a custom action for workspace cleanup.
-4. **Prepare the Environment**: Sets up the necessary build environment.
-5. **Setup SSH Keys**: Configures SSH keys if required for private repositories.
-6. **Install repo**: Installs the `repo` tool.
-7. **Initialize repo**: Initializes the PBRP manifest repository.
-8. **Repo Sync**: Synchronizes all repositories.
-9. **Clone Device Tree**: Clones the device tree into the workspace.
-10. **Set Swap Space**: Allocates swap space for the build.
-11. **Building Recovery**: Executes the build process for PBRP.
-12. **Upload to Release**: Uploads the built image to a GitHub release.
+The current GUI pages are informational. They do not independently perform:
 
-## Usage
+- Partition flashing
+- Partition formatting
+- Data wiping
+- Bootloader unlocking
+- Backup operations
+- Restore operations
 
-To run the workflow:
+Always verify the device model, partition layout, firmware package, and recovery compatibility before performing recovery operations.
 
-1. Go to the `Actions` tab of the `PBRP-RECOVERY-BUILDER` repository.
-2. Select the `Recovery Build` workflow.
-3. Click on `Run workflow`.
-4. Fill in the required fields with your specific build details.
-5. Click `Run workflow` to start the build process.
+**Never assume a source ZIP is a flashable recovery image.**
 
-## Notes
+## Repository Structure
 
-- Replace all `PLACEHOLDER` values with actual data relevant to your build.
-- The workflow is configured for PBRP but can be adapted for other recovery projects as needed.
-- Ensure your repository secrets are set up correctly for SSH keys and GitHub tokens.
+```text
+OFRescue/
+├── .github/
+│   └── workflows/
+│       ├── ofrescue.yml
+│       └── Recovery Build.yml
+├── gui/
+│   └── theme/
+│       └── portrait_hdpi/
+│           └── pages/
+│               ├── advanced.xml
+│               └── ofrescue.xml
+└── README.md
+```
+
+## Source Validation
+
+The OFRescue Source Package workflow:
+
+- Checks required GUI files.
+- Parses available XML files.
+- Checks required OFRescue page names.
+- Creates a downloadable source ZIP.
+- Uploads the ZIP as a GitHub Actions artifact.
+
+The source package is not a recovery image or installer.
+
+## Building Recovery
+
+The separate Recovery Build workflow is intended for recovery image compilation.
+
+A successful build requires:
+
+- A compatible OrangeFox manifest.
+- A working Boston device tree.
+- Compatible kernel and vendor configuration.
+- Correct recovery build configuration.
+- Successful compilation and device testing.
+
+Build settings must be verified against the actual device tree before attempting a device-specific build.
+
+## Development Status
+
+| Component | Status |
+|---|---|
+| OFRescue home page | Source created |
+| Device information page | Informational |
+| Bootloop diagnostics | Checklist only |
+| Backup guidance | Informational |
+| Recovery builder page | Status information only |
+| XML validation workflow | Implemented |
+| Source ZIP packaging | Implemented |
+| Boston recovery integration | Requires testing |
+| Hardware validation | Not yet verified |
+
+## Contributing
+
+Contributions are welcome.
+
+Please verify XML syntax, OrangeFox compatibility, device-specific configuration, and safety behavior before submitting changes.
 
 ## Credits
 
-This project owes its existence to the contributions and efforts of many individuals and communities. We extend our sincere gratitude to everyone who has played a part in bringing this project to fruition.
+Thanks to the OrangeFox Recovery developers, Android recovery developers, device-tree maintainers, and the open-source Android community.
 
-Special thanks to:
-- **ghazzor** for forking and modifying [Action-TWRP-Builder](https://github.com/azwhikaru/Action-TWRP-Builder) to build PBRP recovery and for providing the original workflow that served as the foundation for this project.
-- **azwhikaru** for the original [Action-TWRP-Builder](https://github.com/azwhikaru) repository, which was forked and modified by ghazzor.
+---
 
-We also recognize the following for their support and contributions:
-- The PitchBlack Recovery Project team for their outstanding contributions to the recovery development community.
-- All developers and contributors who have contributed to device trees, kernels, and various scripts that streamline the building process.
-- The GitHub community for providing a collaborative platform that unites developers from across the globe.
-
-For more information on PBRP, visit the PitchBlack Recovery Project.
+**Project:** OFRescue Boston  
+**Repository:** irvenhill777/OFRescue  
+**Target:** Motorola XT2419-1 (Boston)
