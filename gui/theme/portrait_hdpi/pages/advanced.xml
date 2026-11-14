@@ -719,4 +719,9 @@
 					<action function="queuezip"/>
 					<action function="set">tw_notexistpage=fox_modules_confirm</action>
 					<action function="set">tw_existpage=fox_modules_confirm</action>
-                    
+			       	<action function="page">filecheck</action>
+				</listitem>
+			</listbox>
+		</page>
+	</pages>
+</recovery>                    
