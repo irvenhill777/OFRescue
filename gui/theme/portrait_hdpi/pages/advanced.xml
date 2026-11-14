@@ -28,8 +28,7 @@
 				</listitem>
 				<listitem name="{@adb_sideload_btn}">
 					<icon res="devices"/>
-					<action function="set">fox_adb=0</action>
-					<action function="ftls">ps -eo 'comm' | grep adbd && twrp xset fox_adb=1</action>
+					<action function="ftls">ps -eo 'comm' | grep adbd &amp;&amp; twrp xset fox_adb=1</action>
 					<action function="page">sideload</action>
 				</listitem>
 				<listitem name="{@reboot_btn}">
