@@ -1,10 +1,492 @@
-<listitem name="{@reboot_btn}">
-    <icon res="restart"/>
-    <action function="set">tw_back=advanced</action>
-    <action function="overlay">reboot</action>
-</listitem>
+<?xml version="1.0"?>
+<recovery>
+	<pages>
+		<page name="advanced">
+			<action>
+				<action function="set">nav_panel_id=3</action>
+				<action function="set">aroma_help=0</action>
+			</action>
 
-<listitem name="OFRescue Boston">
-    <icon res="overview"/>
-    <action function="page">ofrescue</action>
-</listitem>
+			<text style="caption">
+				<placement x="%gl_text_x%" y="%row0_a_y%"/>
+				<text>{@listbox_group_main}</text>
+			</text>
+
+			<listbox style="group_list">
+				<placement x="0" y="%row1_1a_y%" w="%screen_w%" h="%files_np_w%"/>
+				<listitem name="{@mount_btn}">
+					<icon res="mount_list"/>
+					<action function="page">mount</action>
+				</listitem>
+				<listitem name="{@expand_system_hdr}">
+					<icon res="partitions"/>
+					<action function="page">expand_system</action>
+				</listitem>
+				<listitem name="{@partitions_management}">
+					<icon res="partitions"/>
+					<action function="page">part_manage</action>
+				</listitem>
+				<listitem name="{@adb_sideload_btn}">
+					<icon res="devices"/>
+					<action function="set">fox_adb=0</action>
+					<action function="ftls">ps -eo 'comm' | grep adbd &amp;&amp; twrp xset fox_adb=1</action>
+					<action function="page">sideload</action>
+				</listitem>
+				<listitem name="{@reboot_btn}">
+					<icon res="restart"/>
+					<action function="set">tw_back=advanced</action>
+					<action function="overlay">reboot</action>
+				</listitem>
+			</listbox>
+
+			<listbox style="group_list">
+				<placement x="0" y="%row5_1_y%" w="%screen_w%" h="%adv_additions_h%"/>
+				<listitem name="{@reflash_twrp}">
+					<icon res="wrench"/>
+					<condition var1="fox_branch" op="&gt;=" var2="11"/>
+					<condition var1="tw_has_boot_slots" var2="1"/>
+					<condition var1="tw_has_repack_tools" var2="1"/>
+					<condition var1="fox_disable_reflash_current" op="!=" var2="1"/>
+					<action function="set">tw_repack_kernel=0</action>
+					<action function="set">tw_back=advanced</action>
+					<action function="set">tw_action=reflashtwrp</action>
+					<action function="set">tw_text1={@reflash_twrp}</action>
+					<action function="set">tw_action_text1={@reflashing_twrp}</action>
+					<action function="set">tw_complete_text1={@reflash_twrp_complete}</action>
+					<action function="set">tw_slider_text={@swipe_to_confirm}</action>
+					<action function="page">confirm_action</action>
+				</listitem>
+				<listitem name="Magisk Manager">
+					<condition var1="fileexists" var2="%magisk_path%"/>
+					<condition var1="no_magisk" op="!=" var2="1"/>
+					<icon res="wand_shine"/>
+					<action function="set">rmm_found=-1</action>
+					<action function="set">rmm_type=magisk</action>
+					<action function="page">modules_mount</action>
+				</listitem>
+				<listitem name="Magisk Manager">
+					<condition var1="fileexists" op="!=" var2="%magisk_path%"/>
+					<condition var1="fileexists" op="!=" var2="%ap_path%"/>
+					<condition var1="fileexists" op="!=" var2="%ksu_path%"/>
+					<condition var1="no_magisk" op="!=" var2="1"/>
+					<icon res="wand_shine"/>
+					<action function="set">rmm_found=-1</action>
+					<action function="set">rmm_type=magisk</action>
+					<action function="page">modules_mount</action>
+				</listitem>
+				<listitem name="{@ap_modules}">
+					<condition var1="fileexists" var2="%ap_path%"/>
+					<icon res="android"/>
+					<action function="set">rmm_found=-1</action>
+					<action function="set">rmm_type=ap</action>
+					<action function="page">modules_mount</action>
+				</listitem>
+				<listitem name="{@ksu_modules}">
+					<condition var1="fileexists" var2="%ksu_path%"/>
+					<icon res="kernelsu"/>
+					<action function="set">rmm_found=-1</action>
+					<action function="set">rmm_type=ksu</action>
+					<action function="page">modules_mount</action>
+				</listitem>
+				<listitem name="{@fox_modules_hdr}">
+					<condition var1="fileexists" var2="/FFiles/OF_reset/OF_reset.zip"/>
+					<icon res="addons"/>
+					<action function="page">fox_modules</action>
+				</listitem>
+				<listitem name="{@appmgr_title}">
+					<condition var1="enable_app_manager" var2="1"/>
+					<icon res="apps_box"/>
+					<action function="page">apps_load</action>
+				</listitem>
+				<listitem name="{@copy_log_btn}">
+					<icon res="overview"/>
+					<action function="set">tw_back=advanced</action>
+					<action function="set">tw_action=copylog</action>
+					<action function="set">tw_text1={@copy_log_confirm}</action>
+					<action function="set">tw_action_text1={@copy_log_btn}</action>
+					<action function="set">tw_action_text2={@copying_log}</action>
+					<action function="set">tw_complete_text1={@copy_log_complete}</action>
+					<action function="set">tw_slider_text={@swipe_to_confirm}</action>
+					<action function="page">confirm_action</action>
+				</listitem>
+				<listitem name="{@cust_oth}">
+					<icon res="other"/>
+					<action function="page">fox_other_additions</action>
+				</listitem>
+			</listbox>
+
+			<template name="base_nav"/>
+
+			<button style="actionbar">
+				<placement x="%ab_btn1_x%" y="%ab_y%" placement="4"/>
+				<action function="page">settings</action>
+			</button>
+
+			<image>
+				<placement x="%ab_btn1_x%" y="%ab_y%" placement="4"/>
+				<image resource="actionbar_settings"/>
+			</image>
+
+			<button style="actionbar">
+				<condition var1="of_flashlight_enable" var2="1"/>
+				<placement x="%ab_back_x%" y="%ab_y%" placement="4"/>
+				<action function="flashlight"/>
+			</button>
+
+			<image>
+				<condition var1="of_flashlight_enable" var2="1"/>
+				<condition var1="of_flash_on" op="!=" var2="1"/>
+				<placement x="%ab_back_x%" y="%ab_y%" placement="4"/>
+				<image resource="actionbar_flash"/>
+			</image>
+
+			<image>
+				<condition var1="of_flashlight_enable" var2="1"/>
+				<condition var1="of_flash_on" var2="1"/>
+				<placement x="%ab_back_x%" y="%ab_y%" placement="4"/>
+				<image resource="actionbar_flash_on"/>
+			</image>
+
+			<button style="actionbar">
+				<condition var1="of_flashlight_enable" var2="1"/>
+				<condition var1="fox_use_pass" var2="1"/>
+				<placement x="%ab_btn2_x%" y="%ab_y%" placement="4"/>
+				<action function="set">pass_open=0</action>
+				<action function="page">main</action>
+			</button>
+
+			<image>
+				<condition var1="of_flashlight_enable" var2="1"/>
+				<condition var1="fox_use_pass" var2="1"/>
+				<placement x="%ab_btn2_x%" y="%ab_y%" placement="4"/>
+				<image resource="actionbar_encr_ena"/>
+			</image>
+
+			<text style="text_ab_title">
+				<placement x="%center_x%" y="%ab_bc_fox_y%" placement="5"/>
+				<text>OrangeFox</text>
+			</text>
+
+<!--			<text style="text_ab_subtitle">-->
+<!--				<placement x="%center_x%" y="%ab_bc_double_d_y%" placement="5"/>-->
+<!--				<text>Recovery</text>-->
+<!--			</text>-->
+			
+			<template name="gestures_basic"/>
+
+			<action>
+				<touch key="home"/>
+				<action function="page">advanced</action>
+			</action>
+
+			<action>
+				<touch key="back"/>
+				<action function="page">advanced</action>
+			</action>
+		</page>
+
+		<page name="part_manage">
+
+			<text style="text_body2_hl">
+				<placement x="%gl_text_x%" y="%row0_y%"/>
+				<text>{@listbox_group_static_part}</text>
+			</text>
+
+			<listbox style="group_list">
+				<placement x="0" y="%row1_1a_y%" w="%screen_w%" h="%files_np_w%"/>
+				<listitem name="{@part_menu_hdr}">
+					<icon res="hard_disk"/>
+					<action function="page">part_options</action>
+				</listitem>
+			</listbox>
+
+			<text style="text_body2_hl">
+				<placement x="%gl_text_x%" y="%row2_2_y%"/>
+				<text>{@listbox_group_dynamic_part}</text>
+				<condition var1="fox_branch" op="&gt;=" var2="11"/>
+				<condition var1="fox_dynamic_device" var2="1"/>
+			</text>
+
+			<listbox style="group_list">
+				<placement x="0" y="%row2_3a_y%" w="%screen_w%" h="%files_np_w%"/>
+				<listitem name="{@merges_snapshots}">
+					<icon res="build"/>
+					<condition var1="fox_branch" op="&gt;=" var2="11"/>
+					<condition var1="fox_vab_device" var2="1"/>
+					<action function="set">tw_back=part_manage</action>
+					<action function="set">tw_action=mergesnapshots</action>
+					<action function="set">tw_text1={@merges_snapshots}</action>
+					<action function="set">tw_action_text1={@merging_snapshots}</action>
+					<action function="set">tw_complete_text1={@merging_snapshots_complete}</action>
+					<action function="set">tw_slider_text={@swipe_to_confirm}</action>
+					<action function="page">confirm_action</action>
+				</listitem>
+				<listitem name="{@unmap_super_devices}">
+					<icon res="build"/>
+					<condition var1="fox_branch" op="&gt;=" var2="11"/>
+					<condition var1="fox_dynamic_device" var2="1"/>
+					<action function="set">tw_back=part_manage</action>
+					<action function="set">tw_action=unmapsuperdevices</action>
+					<action function="set">tw_text1={@unmap_super_devices}</action>
+					<action function="set">tw_action_text1={@unmapping_super_devices}</action>
+					<action function="set">tw_complete_text1={@unmap_super_devices_complete}</action>
+					<action function="set">tw_slider_text={@swipe_to_confirm}</action>
+					<action function="page">confirm_action</action>
+				</listitem>
+			</listbox>
+
+			<template name="base"/>
+
+			<text style="text_ab_title">
+				<placement x="%col1_x_indent%" y="%ab_bc_y%"/>
+				<text>{@partitions_management}</text>
+			</text>
+
+			<template name="gestures"/>
+
+			<action>
+				<touch key="home"/>
+				<action function="page">advanced</action>
+			</action>
+
+			<action>
+				<touch key="back"/>
+				<action function="page">advanced</action>
+			</action>
+		</page>
+
+		<page name="mod_survival">
+			<action>
+				<action function="queueclear"/>
+				<action function="set">fox_m_author=DarthJabba9</action>
+				<action function="set">fox_m_name={@module_remove_survival}</action>
+				<action function="set">tw_file=OF_Del_Survival.zip</action>
+				<action function="set">tw_filename=/FFiles/OF_Del_Survival/OF_Del_Survival.zip</action>
+				<action function="set">tw_filecheck=%tw_filename%</action>
+				<action function="set">tw_zip_location=/FFiles/OF_Del_Survival</action>
+				<action function="set">fox_install_built_in_zip=1</action>
+				<action function="queuezip"/>
+				<action function="set">tw_notexistpage=fox_modules_confirm</action>
+				<action function="set">tw_existpage=fox_modules_confirm</action>
+				<action function="page">filecheck</action>
+			</action>
+		</page>
+
+		<page name="mod_factory_rp">
+			<action>
+				<action function="queueclear"/>
+				<action function="set">fox_m_author=DarthJabba9</action>
+				<action function="set">fox_m_name={@remove_factory_reset_protection}</action>
+				<action function="set">tw_file=OF_DelFRP.zip</action>
+				<action function="set">tw_filename=/FFiles/OF_DelFRP/OF_DelFRP.zip</action>
+				<action function="set">tw_filecheck=%tw_filename%</action>
+				<action function="set">tw_zip_location=/FFiles/OF_DelFRP</action>
+				<action function="set">fox_install_built_in_zip=1</action>
+				<action function="queuezip"/>
+				<action function="set">tw_notexistpage=fox_modules_confirm</action>
+				<action function="set">tw_existpage=fox_modules_confirm</action>
+				<action function="page">filecheck</action>
+			</action>
+		</page>
+
+		<page name="mod_magisk">
+			<action>
+				<action function="queueclear"/>
+				<action function="set">fox_m_author=topjohnwu</action>
+				<action function="set">fox_m_name={@module_install} Magisk %magisk_ver%</action>
+				<action function="set">tw_file=%fox_magisk_zip_installer%</action>
+				<action function="set">tw_filename=%fox_magisk_path%/%fox_magisk_zip_installer%</action>
+				<action function="set">tw_filecheck=%tw_filename%</action>
+				<action function="set">tw_zip_location=%fox_magisk_path%</action>
+				<action function="set">fox_install_built_in_zip=1</action>
+				<action function="queuezip"/>
+				<action function="set">tw_notexistpage=fox_modules_confirm</action>
+				<action function="set">tw_existpage=fox_modules_confirm</action>
+				<action function="page">filecheck</action>
+			</action>
+		</page>
+
+		<page name="mod_unmagisk">
+			<action>
+				<action function="queueclear"/>
+				<action function="set">fox_m_author=topjohnwu</action>
+				<action function="set">fox_m_name={@module_uninstall} Magisk</action>
+				<action function="set">tw_file=%fox_magisk_uninstaller%</action>
+				<action function="set">tw_filename=%fox_magisk_path%/%fox_magisk_uninstaller%</action>
+				<action function="set">tw_filecheck=%tw_filename%</action>
+				<action function="set">tw_zip_location=%fox_magisk_path%</action>
+				<action function="set">fox_install_built_in_zip=1</action>
+				<action function="queuezip"/>
+				<action function="set">tw_notexistpage=fox_modules_confirm</action>
+				<action function="set">tw_existpage=fox_modules_confirm</action>
+				<action function="page">filecheck</action>
+			</action>
+		</page>
+
+		<page name="mod_reset">
+			<action>
+				<action function="queueclear"/>
+				<action function="set">fox_m_author=DarthJabba9</action>
+				<action function="set">fox_m_name=OrangeFox: {@dialog_reset_theme_hdr}</action>
+				<action function="set">tw_file=OF_reset.zip</action>
+				<action function="set">tw_filename=/FFiles/OF_reset/OF_reset.zip</action>
+				<action function="set">tw_filecheck=%tw_filename%</action>
+				<action function="set">tw_zip_location=/FFiles/OF_reset</action>
+				<action function="set">fox_install_built_in_zip=1</action>
+				<action function="queuezip"/>
+				<action function="set">tw_notexistpage=fox_modules_confirm</action>
+				<action function="set">tw_existpage=fox_modules_confirm</action>
+				<action function="page">filecheck</action>
+			</action>
+		</page>
+
+		<page name="mod_pass">
+			<action>
+				<action function="queueclear"/>
+				<action function="set">fox_m_author=DarthJabba9</action>
+				<action function="set">fox_m_name={@module_pass}</action>
+				<action function="set">tw_file=OF_DelPass.zip</action>
+				<action function="set">tw_filename=/FFiles/OF_DelPass/OF_DelPass.zip</action>
+				<action function="set">tw_filecheck=%tw_filename%</action>
+				<action function="set">tw_zip_location=/FFiles/OF_DelPass</action>
+				<action function="set">fox_install_built_in_zip=1</action>
+				<action function="queuezip"/>
+				<action function="set">tw_notexistpage=fox_modules_confirm</action>
+				<action function="set">tw_existpage=fox_modules_confirm</action>
+				<action function="page">filecheck</action>
+			</action>
+		</page>
+
+		<page name="mod_kernelsu">
+		  <action>
+			<action function="queueclear"/>
+			<action function="set">fox_m_author=KernelSU Team</action>
+			<action function="set">fox_m_name={@module_install} KernelSU</action>
+			<action function="set">tw_file=KernelSU_Installer.zip</action>
+			<action function="set">tw_filename=/FFiles/KernelSU/KernelSU_Installer.zip</action>
+			<action function="set">tw_filecheck=%tw_filename%</action>
+			<action function="set">tw_zip_location=/FFiles/KernelSU</action>
+			<action function="set">fox_install_built_in_zip=1</action>
+			<action function="queuezip"/>
+			<action function="set">tw_notexistpage=fox_modules_confirm</action>
+			<action function="set">tw_existpage=fox_modules_confirm</action>
+			<action function="page">filecheck</action>
+		  </action>
+		</page>
+
+		<page name="mod_kernelsu_next">
+		  <action>
+			<action function="queueclear"/>
+			<action function="set">fox_m_author=KernelSU Team</action>
+			<action function="set">fox_m_name={@module_install} KernelSU Next</action>
+			<action function="set">tw_file=KernelSU_Next_Installer.zip</action>
+			<action function="set">tw_filename=/FFiles/KernelSU/KernelSU_Next_Installer.zip</action>
+			<action function="set">tw_filecheck=%tw_filename%</action>
+			<action function="set">tw_zip_location=/FFiles/KernelSU</action>
+			<action function="set">fox_install_built_in_zip=1</action>
+			<action function="queuezip"/>
+			<action function="set">tw_notexistpage=fox_modules_confirm</action>
+			<action function="set">tw_existpage=fox_modules_confirm</action>
+			<action function="page">filecheck</action>
+		  </action>
+		</page>
+
+		<page name="mod_sukisu">
+		  <action>
+			<action function="queueclear"/>
+			<action function="set">fox_m_author=SukiSU Team</action>
+			<action function="set">fox_m_name={@module_install} SukiSU Ultra 3.1.8</action>
+			<action function="set">tw_file= KernelSU_Suki_Installer.zip</action>
+			<action function="set">tw_filename=/FFiles/KernelSU/KernelSU_Suki_Installer.zip</action>
+			<action function="set">tw_filecheck=%tw_filename%</action>
+			<action function="set">tw_zip_location=/FFiles/KernelSU</action>
+			<action function="set">fox_install_built_in_zip=1</action>
+			<action function="queuezip"/>
+			<action function="set">tw_notexistpage=fox_modules_confirm</action>
+			<action function="set">tw_existpage=fox_modules_confirm</action>
+			<action function="page">filecheck</action>
+		  </action>
+		</page>
+
+		<page name="fox_modules">
+			<action>
+				<action function="set">install_back=fox_modules</action>
+				<action function="set">aroma_help=0</action>
+			</action>
+
+			<!-- fox_modules_confirm located in install.xml -->
+
+			<text style="caption">
+				<placement x="%gl_text_x%" y="%row1_1_y%"/>
+				<text>Magisk</text>
+			</text>
+
+			<listbox style="group_list">
+				<placement x="0" y="%row1_2_y%" w="%screen_w%" h="%bl_h2%"/>
+				<listitem name="{@module_install} Magisk %magisk_ver%">
+					<icon res="archive"/>
+					<action function="page">mod_magisk</action>
+				</listitem>
+				<listitem name="{@module_uninstall} Magisk">
+					<icon res="archive"/>
+					<action function="page">mod_unmagisk</action>
+				</listitem>
+			</listbox>
+
+			<text style="caption">
+				<placement x="%gl_text_x%" y="%row3_1a_y%"/>
+				<text>{@cust_oth}</text>
+			</text>
+
+			<listbox style="group_list">
+				<placement x="0" y="%row3_2a_y%" w="%screen_w%" h="%bl_h4%"/>
+				<listitem name="{@module_of_set}">
+					<condition var1="fileexists" var2="/FFiles/OF_backup_settings/OF_backup_settings.zip"/>
+					<icon res="archive"/>
+					<action function="queueclear"/>
+					<action function="set">fox_m_author=DarthJabba9</action>
+					<action function="set">fox_m_name={@module_of_set}</action>
+					<action function="set">tw_file=OF_backup_settings.zip</action>
+					<action function="set">tw_filename=/FFiles/OF_backup_settings/OF_backup_settings.zip</action>
+					<action function="set">tw_filecheck=%tw_filename%</action>
+					<action function="set">tw_zip_location=/FFiles/OF_backup_settings</action>
+					<action function="set">fox_install_built_in_zip=1</action>
+					<action function="queuezip"/>
+					<action function="set">tw_notexistpage=fox_modules_confirm</action>
+					<action function="set">tw_existpage=fox_modules_confirm</action>
+					<action function="page">filecheck</action>
+				</listitem>
+				<listitem name="OrangeFox: {@dialog_reset_theme_hdr}">
+					<condition var1="fileexists" var2="/FFiles/OF_reset/OF_reset.zip"/>
+					<icon res="archive"/>
+					<action function="page">mod_reset</action>
+				</listitem>
+
+				<listitem name="{@module_pass}">
+					<condition var1="fileexists" var2="/FFiles/OF_DelPass/OF_DelPass.zip"/>
+					<icon res="archive"/>
+					<action function="page">mod_pass</action>
+				</listitem>
+
+				<listitem name="{@module_remove_survival}">
+					<condition var1="fileexists" var2="/FFiles/OF_Del_Survival/OF_Del_Survival.zip"/>
+					<condition var1="fox_branch" op="&gt;=" var2="10"/>
+					<icon res="archive"/>
+					<action function="page">mod_survival</action>
+				</listitem>
+
+				<listitem name="{@remove_of_files}">
+					<condition var1="fileexists" var2="/FFiles/OF_DelFiles/OF_DelFiles.zip"/>
+					<icon res="archive"/>
+					<action function="queueclear"/>
+					<action function="set">fox_m_author=DarthJabba9</action>
+					<action function="set">fox_m_name={@remove_of_files}</action>
+					<action function="set">tw_file=OF_DelFiles.zip</action>
+					<action function="set">tw_filename=/FFiles/OF_DelFiles/OF_DelFiles.zip</action>
+					<action function="set">tw_filecheck=%tw_filename%</action>
+					<action function="set">tw_zip_location=/FFiles/OF_DelFiles</action>
+					<action function="set">fox_install_built_in_zip=1</action>
+					<action function="queuezip"/>
+					<action function="set">tw_notexistpage=fox_modules_confirm</action>
+					<action function="set">tw_existpage=fox_modules_confirm</action>
+                    
