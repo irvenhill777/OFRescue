@@ -1,145 +1,327 @@
-name: Recovery Build
+
+name: OFRescue Boston Recovery Build
 
 on:
   workflow_dispatch:
     inputs:
       MANIFEST_URL:
-        description: 'MANIFEST_URL (if want to use SSH keys, use git@github.com:XXXXX)'
+        description: 'OrangeFox manifest Git URL'
         required: true
-        default: 'PLACEHOLDER'
+        type: string
       MANIFEST_BRANCH:
-        description: 'MANIFEST_BRANCH'
+        description: 'Manifest branch'
         required: true
-        default: 'PLACEHOLDER'
+        type: string
       DEVICE_TREE_URL:
-        description: 'DEVICE_TREE_URL'
+        description: 'Boston device tree Git URL'
         required: true
-        default: 'PLACEHOLDER'
+        type: string
       DEVICE_TREE_BRANCH:
-        description: 'DEVICE_TREE_BRANCH'
+        description: 'Device tree branch'
         required: true
-        default: 'PLACEHOLDER'
+        type: string
       DEVICE_PATH:
-        description: 'DEVICE_PATH'
+        description: 'Device tree path inside source'
         required: true
-        default: 'PLACEHOLDER'
+        default: 'device/motorola/boston'
+        type: string
       DEVICE_NAME:
-        description: 'DEVICE_NAME'
+        description: 'Device codename'
         required: true
-        default: 'PLACEHOLDER'
+        default: 'boston'
+        type: string
       MAKEFILE_NAME:
-        description: 'MAKEFILE_NAME'
+        description: 'Lunch product name without -eng'
         required: true
-        default: 'PLACEHOLDER'
+        type: string
       BUILD_TARGET:
-        description: 'BUILD_TARGET'
+        description: 'Build target'
         required: true
-        default: 'PLACEHOLDER'
+        default: 'recovery'
+        type: choice
+        options:
+          - recovery
+          - boot
+          - vendorboot
       USER_NAME:
-        description: 'Git Username'
+        description: 'Git username'
         required: true
-        default: 'PLACEHOLDER'
+        default: 'OFRescue Builder'
+        type: string
       USER_EMAIL:
-        description: 'Git Email'
+        description: 'Git email'
         required: true
-        default: 'PLACEHOLDER'
+        default: 'ofrescue-builder@example.invalid'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ofrescue-build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    if: github.event.repository.owner.id == github.event.sender.id
+    name: Build Boston Recovery
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    timeout-minutes: 360
+
+    env:
+      MANIFEST_URL: ${{ inputs.MANIFEST_URL }}
+      MANIFEST_BRANCH: ${{ inputs.MANIFEST_BRANCH }}
+      DEVICE_TREE_URL: ${{ inputs.DEVICE_TREE_URL }}
+      DEVICE_TREE_BRANCH: ${{ inputs.DEVICE_TREE_BRANCH }}
+      DEVICE_PATH: ${{ inputs.DEVICE_PATH }}
+      DEVICE_NAME: ${{ inputs.DEVICE_NAME }}
+      MAKEFILE_NAME: ${{ inputs.MAKEFILE_NAME }}
+      BUILD_TARGET: ${{ inputs.BUILD_TARGET }}
+      USER_NAME: ${{ inputs.USER_NAME }}
+      USER_EMAIL: ${{ inputs.USER_EMAIL }}
+
     steps:
-    - name: Display Run Parameters
-      run: |
-        echo "::group::User Environment Variables"
-        echo "Manifest URL: ${{ github.event.inputs.MANIFEST_URL }}"
-        echo "Manifest Branch: ${{ github.event.inputs.MANIFEST_BRANCH }}"
-        echo "Device Tree URL: ${{ github.event.inputs.DEVICE_TREE_URL }}"
-        echo "Device Tree Branch: ${{ github.event.inputs.DEVICE_TREE_BRANCH }}"
-        echo "Device Path: ${{ github.event.inputs.DEVICE_PATH }}"
-        echo "Device Name: ${{ github.event.inputs.DEVICE_NAME }}"
-        echo "Makefile Name: ${{ github.event.inputs.MAKEFILE_NAME }}"
-        echo "Build Target: ${{ github.event.inputs.BUILD_TARGET }}.img"
-        echo "::endgroup::"
+      - name: Checkout OFRescue
+        uses: actions/checkout@v4
 
-    - name: Check Out
-      uses: actions/checkout@v4
+      - name: Validate build inputs
+        shell: bash
+        run: |
+          set -euo pipefail
 
-    - name: Cleanup
-      uses: rokibhasansagar/slimhub_actions@main
+          for name in \
+            MANIFEST_URL MANIFEST_BRANCH \
+            DEVICE_TREE_URL DEVICE_TREE_BRANCH \
+            DEVICE_PATH DEVICE_NAME MAKEFILE_NAME \
+            BUILD_TARGET USER_NAME USER_EMAIL
+          do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name cannot be empty."
+              exit 1
+            fi
+          done
 
-    - name: Prepare the environment
-      run: |
-        sudo apt install git aria2 -y
-        mkdir ofx_scripts
-        cd ofx_scripts
-        git clone https://gitlab.com/OrangeFox/misc/scripts 
-        cd scripts
-        sudo bash setup/android_build_env.sh
-        sed -i 's/cd -/cd ../g' setup/install_android_sdk.sh
-        sudo bash setup/install_android_sdk.sh
+          case "$MANIFEST_URL" in
+            https://*|git@github.com:*)
+              ;;
+            *)
+              echo "::error::Unsupported manifest URL."
+              exit 1
+              ;;
+          esac
 
-    - name: Setup SSH Keys
-      if: ${{ startsWith(github.event.inputs.MANIFEST_URL, 'git@github.com') }}
-      uses: webfactory/ssh-agent@v0.5.4
-      with:
-          ssh-private-key: |
-              ${{ secrets.SSH_PRIVATE_KEY }}
+          case "$DEVICE_TREE_URL" in
+            https://*|git@github.com:*)
+              ;;
+            *)
+              echo "::error::Unsupported device tree URL."
+              exit 1
+              ;;
+          esac
 
-    - name: Install repo
-      run: |
-        mkdir ~/bin
-        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
-        chmod a+x ~/bin/repo
-        sudo ln -sf ~/bin/repo /usr/bin/repo
-      
-    - name: Initialize repo
-      run: |
-        mkdir workspace
-        cd workspace
-        echo "workspace-folder=$(pwd)" >> $GITHUB_OUTPUT
-        git config --global user.name "${{ github.event.inputs.USER_NAME }}"
-        git config --global user.email "${{ github.event.inputs.USER_EMAIL }}"
-        repo init --depth=1 -u ${{ github.event.inputs.MANIFEST_URL }} -b ${{ github.event.inputs.MANIFEST_BRANCH }}
-      id: pwd
-          
-    - name: Repo Sync
-      run: |
-        repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j$(nproc --all)
-      working-directory: workspace
-      
-    - name: Clone device tree
-      run: |
-        git clone ${{ github.event.inputs.DEVICE_TREE_URL }} -b ${{ github.event.inputs.DEVICE_TREE_BRANCH }} ./${{ github.event.inputs.DEVICE_PATH }}
-      working-directory: ${{ steps.pwd.outputs.workspace-folder }}
+          if [[ ! "$DEVICE_PATH" =~ ^[A-Za-z0-9._/-]+$ ]] ||
+             [[ "$DEVICE_PATH" == /* ]] ||
+             [[ "$DEVICE_PATH" == *".."* ]]; then
+            echo "::error::Invalid device tree path."
+            exit 1
+          fi
 
-    - name: Set Swap Space
-      uses: pierotofy/set-swap-space@master
-      with:
-        swap-size-gb: 12
+          if [[ ! "$DEVICE_NAME" =~ ^[A-Za-z0-9_-]+$ ]]; then
+            echo "::error::Invalid device name."
+            exit 1
+          fi
 
-    - name: Building recovery
-      run: |
-        source build/envsetup.sh
-        export ALLOW_MISSING_DEPENDENCIES=true
-        lunch ${{ github.event.inputs.MAKEFILE_NAME }}-eng && make clean && make ${{ github.event.inputs.BUILD_TARGET }}image -j$(nproc --all)
-      working-directory: ${{ steps.pwd.outputs.workspace-folder }}
+          if [[ ! "$MAKEFILE_NAME" =~ ^[A-Za-z0-9_-]+$ ]]; then
+            echo "::error::Invalid lunch product."
+            exit 1
+          fi
 
-    - name: Upload to Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: | 
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/${{ github.event.inputs.BUILD_TARGET }}.img
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*.zip
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*vendor*.img
-        name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
-        tag_name: ${{ github.run_id }}
-        body: |
-          Manifest: ${{ github.event.inputs.MANIFEST_BRANCH }}
-          Device: ${{ github.event.inputs.DEVICE_NAME }}
-          Target: ${{ github.event.inputs.BUILD_TARGET }}.img
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
+          case "$BUILD_TARGET" in
+            recovery|boot|vendorboot)
+              ;;
+            *)
+              echo "::error::Unsupported build target."
+              exit 1
+              ;;
+          esac
+
+          echo "Build inputs passed validation."
+          echo "Device: $DEVICE_NAME"
+          echo "Device path: $DEVICE_PATH"
+          echo "Build target: $BUILD_TARGET"
+
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sudo apt-get update
+
+          sudo apt-get install -y \
+            git curl wget aria2 \
+            zip unzip rsync \
+            python3 python-is-python3 \
+            openjdk-17-jdk \
+            bc bison build-essential \
+            flex g++-multilib gcc-multilib \
+            libncurses-dev libssl-dev \
+            libxml2-utils lz4 \
+            zlib1g-dev
+
+      - name: Setup OrangeFox build environment
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$HOME/ofx_scripts"
+
+          git clone \
+            https://gitlab.com/OrangeFox/misc/scripts \
+            "$HOME/ofx_scripts/scripts"
+
+          cd "$HOME/ofx_scripts/scripts"
+
+          sudo bash setup/android_build_env.sh
+
+      - name: Install repo tool
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$HOME/bin"
+
+          curl -fL \
+            https://storage.googleapis.com/git-repo-downloads/repo \
+            -o "$HOME/bin/repo"
+
+          chmod +x "$HOME/bin/repo"
+
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Configure Git
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config --global user.name "$USER_NAME"
+          git config --global user.email "$USER_EMAIL"
+
+      - name: Initialize OrangeFox source
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p workspace
+          cd workspace
+
+          repo init \
+            --depth=1 \
+            -u "$MANIFEST_URL" \
+            -b "$MANIFEST_BRANCH"
+
+      - name: Synchronize source
+        shell: bash
+        working-directory: workspace
+        run: |
+          set -euo pipefail
+
+          repo sync \
+            -c \
+            --no-clone-bundle \
+            --no-tags \
+            --optimized-fetch \
+            --prune \
+            --force-sync \
+            -j2
+
+      - name: Clone Boston device tree
+        shell: bash
+        working-directory: workspace
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$(dirname "$DEVICE_PATH")"
+
+          git clone \
+            --depth=1 \
+            --branch "$DEVICE_TREE_BRANCH" \
+            "$DEVICE_TREE_URL" \
+            "$DEVICE_PATH"
+
+          if [ ! -d "$DEVICE_PATH" ]; then
+            echo "::error::Device tree directory was not created."
+            exit 1
+          fi
+
+          echo "Device tree cloned successfully."
+
+      - name: Configure swap space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 12
+
+      - name: Verify build configuration
+        shell: bash
+        working-directory: workspace
+        run: |
+          set -euo pipefail
+
+          if [ ! -f build/envsetup.sh ]; then
+            echo "::error::Missing build/envsetup.sh."
+            exit 1
+          fi
+
+          if [ ! -f "$DEVICE_PATH/AndroidProducts.mk" ] &&
+             [ ! -f "$DEVICE_PATH/BoardConfig.mk" ]; then
+            echo "::error::Device tree build files were not found."
+            exit 1
+          fi
+
+          echo "Build configuration files found."
+
+      - name: Build recovery image
+        shell: bash
+        working-directory: workspace
+        run: |
+          set -euo pipefail
+
+          source build/envsetup.sh
+
+          export ALLOW_MISSING_DEPENDENCIES=true
+
+          lunch "${MAKEFILE_NAME}-eng"
+
+          make clean
+
+          make "${BUILD_TARGET}image" -j2
+
+      - name: Verify build output
+        shell: bash
+        working-directory: workspace
+        run: |
+          set -euo pipefail
+
+          OUTPUT_DIR="out/target/product/$DEVICE_NAME"
+
+          if [ ! -d "$OUTPUT_DIR" ]; then
+            echo "::error::Build output directory is missing."
+            exit 1
+          fi
+
+          find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.img' -print
+
+          if [ ! -f "$OUTPUT_DIR/${BUILD_TARGET}.img" ]; then
+            echo "::error::Expected image was not produced."
+            exit 1
+          fi
+
+          echo "Build output verified."
+
+      - name: Upload recovery artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: OFRescue-Boston-Recovery-${{ github.run_number }}
+          path: |
+            workspace/out/target/product/${{ inputs.DEVICE_NAME }}/*.img
+            workspace/out/target/product/${{ inputs.DEVICE_NAME }}/*.zip
+          if-no-files-found: error
+          retention-days: 14
