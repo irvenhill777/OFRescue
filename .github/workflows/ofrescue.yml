@@ -1,5 +1,5 @@
 
-name: OFRescue Boston GUI Package
+name: OFRescue Boston Source Package
 
 on:
   workflow_dispatch:
@@ -14,56 +14,103 @@ on:
 
 permissions:
   contents: read
-  actions: write
 
 jobs:
   package:
-    name: Package Boston Rescue GUI
+    name: Validate and Package OFRescue Sources
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check required files
+      - name: Prepare package directory
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
 
-          test -f gui/theme/portrait_hdpi/pages/ofrescue.xml
-          test -f gui/theme/portrait_hdpi/pages/advanced.xml
+          mkdir -p package output
+          cp README.md package/README.md
 
-          echo "Boston OFRescue GUI files found."
+          if [ -d gui ]; then
+            cp -R gui package/gui
+          fi
 
-      - name: Validate XML syntax
+          if [ -d ofrescue ]; then
+            cp -R ofrescue package/ofrescue
+          fi
+
+      - name: Validate available XML files
+        shell: bash
         run: |
+          set -euo pipefail
+
           python3 - <<'PY'
+          from pathlib import Path
+          import sys
           import xml.etree.ElementTree as ET
 
-          files = [
-              "gui/theme/portrait_hdpi/pages/ofrescue.xml",
-              "gui/theme/portrait_hdpi/pages/advanced.xml"
-          ]
+          gui = Path("gui")
+          xml_files = sorted(gui.rglob("*.xml")) if gui.exists() else []
 
-          for file in files:
-              ET.parse(file)
-              print("XML syntax OK:", file)
+          if not xml_files:
+              print("NOTICE: No GUI XML files are in the repository yet.")
+              print("This run creates a source bundle, not a flashable recovery.")
+              raise SystemExit(0)
+
+          failed = False
+          for path in xml_files:
+              try:
+                  ET.parse(path)
+                  print(f"XML syntax OK: {path}")
+              except ET.ParseError as exc:
+                  print(f"XML SYNTAX ERROR: {path}: {exc}")
+                  failed = True
+
+          if failed:
+              raise SystemExit(1)
           PY
 
-      - name: Create package
+      - name: Mark package readiness
+        shell: bash
         run: |
-          mkdir -p output
+          set -euo pipefail
 
-          zip -r output/OFRescue-Boston-GUI.zip \
-            gui \
-            ofrescue \
-            README.md
+          GUI_PAGE="gui/theme/portrait_hdpi/pages/ofrescue.xml"
 
-          echo "Package created."
+          if [ -f "$GUI_PAGE" ]; then
+            cat > package/PACKAGE-STATUS.txt <<'EOF'
+          OFRescue Boston source bundle
+          GUI page source was found and XML syntax validation passed.
+          This package is not a flashable recovery image.
+          OrangeFox 12.1 integration and device-specific build testing are still required.
+          EOF
+          else
+            cat > package/PACKAGE-STATUS.txt <<'EOF'
+          OFRescue Boston source bundle — NOT GUI COMPLETE
+          The expected GUI page is missing:
+          gui/theme/portrait_hdpi/pages/ofrescue.xml
 
-      - name: Upload package
+          This artifact only packages files currently in the repository.
+          It is NOT a flashable recovery, installer ZIP, or completed touchscreen interface.
+          Add and validate the OrangeFox 12.1 GUI source before recovery integration.
+          EOF
+          fi
+
+          echo "Package contents:"
+          find package -maxdepth 5 -type f -print
+
+      - name: Create ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd package
+          zip -qr ../output/OFRescue-Boston-Source-Bundle.zip .
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: OFRescue-Boston-GUI
-          path: output/OFRescue-Boston-GUI.zip
+          name: OFRescue-Boston-Source-Bundle
+          path: output/OFRescue-Boston-Source-Bundle.zip
           if-no-files-found: error
           retention-days: 30
