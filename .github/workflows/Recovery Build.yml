@@ -251,23 +251,27 @@ jobs:
           export ALLOW_MISSING_DEPENDENCIES=true
           export LC_ALL=C
 
-          echo "Checking Android build environment..."
-          echo "Current directory: $(pwd)"
+          echo "Loading OrangeFox build environment..."
 
-          test -f build/envsetup.sh
-
-          echo "Loading build/envsetup.sh..."
-          set -x
+          # Some OrangeFox setup scripts return status 1
+          # after defining the build commands.
+          set +e
           source build/envsetup.sh
+          SOURCE_STATUS=$?
+          set -e
 
-          echo "Checking lunch command..."
-          type lunch
+          echo "envsetup.sh returned: $SOURCE_STATUS"
+
+          if ! type lunch >/dev/null 2>&1; then
+            echo "::error::The lunch command was not loaded."
+            exit 1
+          fi
 
           echo "Selecting Boston recovery product..."
           lunch "${LUNCH_PRODUCT}-eng"
 
-          set +x
-          echo "Build environment configured."
+          echo "Boston build environment configured."
+
 
       - name: Build Boston recovery image
         shell: bash
