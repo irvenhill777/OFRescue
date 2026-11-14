@@ -36,6 +36,18 @@
 					<icon res="restart"/>
 					<action function="set">tw_back=advanced</action>
 					<action function="overlay">reboot</action>
+					
+				<listitem name="{@reboot_btn}">
+					<icon res="restart"/>
+					<action function="set">tw_back=advanced</action>
+					<action function="overlay">reboot</action>
+				</listitem>
+
+				<listitem name="OFRescue Boston">
+					<icon res="overview"/>
+					<action function="page">ofrescue</action>
+				</listitem>
+					
 					<listitem name="OFRescue Boston">
     <icon res="overview"/>
     <action function="page">ofrescue</action>
